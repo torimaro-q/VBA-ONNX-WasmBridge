@@ -1,5 +1,7 @@
 # VBA-ONNX-WasmBridge
 
+![screenshot](pic/screenshot2.png)
+
 This repository provides a demonstration of how to run an ONNX model from Microsoft Excel using VBA and PowerShell.  
 It is intended **for learning and reference purposes only**, not for production use.
 
@@ -7,7 +9,6 @@ It is intended **for learning and reference purposes only**, not for production 
 **学習用・参考用**を目的としており、実運用を想定したものではありません。
 
 ---
-![screenshot](pic/screenshot2.png)
 ## Overview / 概要
 - Load an image directly from Excel  
 - Use VBA to prepare runtime files and call PowerShell  
@@ -17,7 +18,7 @@ It is intended **for learning and reference purposes only**, not for production 
 - Excel から直接画像を読み込み  
 - VBA でランタイムファイルを準備し、PowerShell を呼び出し  
 - ONNX Runtime Web（JavaScript + WebAssembly）で推論を実行  
-- 結果を Excel のユーザーフォームに表示  
+- 結果を Excel のユーザーフォームに表示 (OpenGL使用)
 
 ## Supported ONNX Models / 対応ONNXモデル
 - ResNet
