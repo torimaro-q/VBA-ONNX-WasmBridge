@@ -25,7 +25,7 @@ Private Declare PtrSafe Function wglMakeCurrent Lib "opengl32.dll" (ByVal hdc As
 Private Declare PtrSafe Function wglDeleteContext Lib "opengl32.dll" (ByVal hdc As LongPtr) As Long
 Private Declare PtrSafe Sub glColor4f Lib "opengl32.dll" (ByVal red As Single, ByVal green As Single, ByVal blue As Single, ByVal alpha As Single)
 Private Declare PtrSafe Sub glColor3d Lib "opengl32.dll" (ByVal red As Double, ByVal green As Double, ByVal blue As Double)
-Private Declare PtrSafe Sub glVertex2d Lib "opengl32.dll" (ByVal A As Double, ByVal b As Double)
+Private Declare PtrSafe Sub glVertex2d Lib "opengl32.dll" (ByVal a As Double, ByVal b As Double)
 Private Declare PtrSafe Sub glVertex3d Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
 Private Declare PtrSafe Sub glNormal3d Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
 Private Declare PtrSafe Sub glVertex3dv Lib "opengl32.dll" (ByVal dPtr As LongPtr)
@@ -55,6 +55,8 @@ Private Declare PtrSafe Sub glDrawElements Lib "opengl32.dll" (ByVal GLenum As L
 Private Declare PtrSafe Sub glClipPlane Lib "opengl32.dll" (ByVal GLenum As Long, ByVal ptr As LongPtr)
 
 Private Declare PtrSafe Function CreateFont Lib "gdi32" Alias "CreateFontA" (ByVal nHeight As Long, ByVal nWidth As Long, ByVal nEscapement As Long, ByVal nOrientation As Long, ByVal fnWeight As Long, ByVal IfdwItalic As Long, ByVal fdwUnderline As Long, ByVal fdwStrikeOut As Long, ByVal fdwCharSet As Long, ByVal fdwOutputPrecision As Long, ByVal fdwClipPrecision As Long, ByVal fdwQuality As Long, ByVal fdwPitchAndFamily As Long, ByVal lpszFace As String) As LongPtr
+Private Declare PtrSafe Function CreateFontW Lib "gdi32" (ByVal nHeight As Long, ByVal nWidth As Long, ByVal nEscapement As Long, ByVal nOrientation As Long, ByVal fnWeight As Long, ByVal IfdwItalic As Long, ByVal fdwUnderline As Long, ByVal fdwStrikeOut As Long, ByVal fdwCharSet As Long, ByVal fdwOutputPrecision As Long, ByVal fdwClipPrecision As Long, ByVal fdwQuality As Long, ByVal fdwPitchAndFamily As Long, ByVal lpszFace As String) As LongPtr
+
 Private Declare PtrSafe Function wglUseFontBitmaps Lib "opengl32.dll" Alias "wglUseFontBitmapsA" (ByVal hdc As LongPtr, ByVal dfirst As Long, ByVal dcount As Long, ByVal dlistbase As Long) As Long
 Private Declare PtrSafe Function wglUseFontBitmapsW Lib "opengl32.dll" (ByVal hdc As LongPtr, ByVal dfirst As Long, ByVal dcount As Long, ByVal dlistbase As Long) As Long
 
@@ -64,12 +66,12 @@ Private Declare PtrSafe Sub glTranslated Lib "opengl32.dll" (ByVal X As Double, 
 Private Declare PtrSafe Sub glRotated Lib "opengl32.dll" (ByVal angle As Double, ByVal X As Double, ByVal y As Double, ByVal z As Double)
 Private Declare PtrSafe Sub glScaled Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
 
-Private Declare PtrSafe Function glIsList Lib "opengl32.dll" (ByVal Index As Long) As Byte
-Private Declare PtrSafe Sub glNewList Lib "opengl32.dll" (ByVal Index As Long, ByVal GLenum As Long)
+Private Declare PtrSafe Function glIsList Lib "opengl32.dll" (ByVal index As Long) As Byte
+Private Declare PtrSafe Sub glNewList Lib "opengl32.dll" (ByVal index As Long, ByVal GLenum As Long)
 Private Declare PtrSafe Sub glEndList Lib "opengl32.dll" ()
-Private Declare PtrSafe Sub glCallList Lib "opengl32.dll" (ByVal Index As Long)
-Private Declare PtrSafe Sub glDeleteLists Lib "opengl32.dll" (ByVal Index As Long, ByVal size As Long)
-Private Declare PtrSafe Sub glDeleteList Lib "opengl32.dll" (ByVal Index As Long)
+Private Declare PtrSafe Sub glCallList Lib "opengl32.dll" (ByVal index As Long)
+Private Declare PtrSafe Sub glDeleteLists Lib "opengl32.dll" (ByVal index As Long, ByVal size As Long)
+Private Declare PtrSafe Sub glDeleteList Lib "opengl32.dll" (ByVal index As Long)
 Private Declare PtrSafe Sub glListBase Lib "opengl32.dll" (ByVal base As Long)
 Private Declare PtrSafe Sub glCallLists Lib "opengl32.dll" (ByVal size As Long, ByVal vType As Long, ByVal ptr As LongPtr)
 Private Declare PtrSafe Sub glPixelStorei Lib "opengl32.dll" (ByVal GLenum As Long, ByVal param As Long)
@@ -81,7 +83,7 @@ Private Declare PtrSafe Sub glTexImage2D Lib "opengl32.dll" (ByVal GLenum As Lon
 Private Declare PtrSafe Sub gluBuild2DMipmaps Lib "glu32.dll" (ByVal GLenum1 As Long, ByVal GLenum2 As Long, _
                                                               ByVal width As Long, ByVal height As Long, _
                                                               ByVal GLenum3 As Long, ByVal GLenum4 As Long, ByVal PixelPtr As LongPtr)
-Private Declare PtrSafe Sub glTexCoord2d Lib "opengl32.dll" (ByVal s As Double, ByVal t As Double)
+Private Declare PtrSafe Sub glTexCoord2d Lib "opengl32.dll" (ByVal S As Double, ByVal t As Double)
 
 Private Declare PtrSafe Sub glGenTextures Lib "opengl32.dll" (ByVal n As Long, ByRef textures As Long)
 Private Declare PtrSafe Sub glBindTexture Lib "opengl32.dll" (ByVal target As Long, ByVal texture As Long)
@@ -90,16 +92,23 @@ Private Declare PtrSafe Sub glDeleteTextures Lib "opengl32.dll" (ByVal n As Long
 Private pfd As PIXELFORMATDESCRIPTOR
 Public hformat As Long, hGLRC As LongPtr, hdc As LongPtr
 Private myhwnd As LongPtr
-Public Sub CreateFontList(Optional ByVal FontSize As Long = 30, Optional ByVal FontName As String = "Arial", Optional ByVal weight As Long = 200, Optional listbase As Long = 1000)
+Public Sub CreateFontList(Optional ByVal FontSize As Long = 30, Optional ByVal FontName As String = "Arial", Optional ByVal weight As Long = 200, Optional listbase As Long = 1000, Optional genCount As Long = 255, Optional isUnicode As Boolean = False)
     Dim hFont As LongPtr, hOldFont As LongPtr
-    If glIsList(listbase) = 1 Then glDeleteLists listbase, 255
-    hFont = CreateFont(FontSize, 0, 0, 0, weight, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH Or FF_SCRIPT, FontName)
+    If glIsList(listbase) = 1 Then glDeleteLists listbase, genCount
+    If isUnicode = False Then
+        hFont = CreateFont(FontSize, 0, 0, 0, weight, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, FontName)
+    Else
+        hFont = CreateFontW(FontSize, 0, 0, 0, weight, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, FontName)
+    End If
     If hFont = 0 Then Exit Sub
     hOldFont = SelectObject(hdc, hFont)
-    wglUseFontBitmaps hdc, 0, 255, listbase
+    If isUnicode = False Then
+        wglUseFontBitmaps hdc, 0, genCount, listbase
+    Else
+        wglUseFontBitmapsW hdc, 0, genCount, listbase
+    End If
     Call SelectObject(hdc, hOldFont)
     Call DeleteObject(hFont)
-    DoEvents
 End Sub
 Public Sub GenTextures(ByVal n As Long, ByRef textures As Long)
     glGenTextures n, textures
@@ -111,28 +120,28 @@ Public Sub DeleteTextures(ByVal n As Long, ByRef textures As Long)
     glDeleteTextures n, textures
 End Sub
 Public Sub DisposeFontList()
-    If glIsList(1000) = 1 Then glDeleteLists 1000, 10000
+    If glIsList(FONT_BASE_SMALL) = 1 Then glDeleteLists FONT_BASE_SMALL, FONT_BASE_UNICODE + 65535
 End Sub
-Public Sub NewList(ByVal Index As Long, CompileMode As GLenum)
-    Call glNewList(Index, CompileMode)
+Public Sub NewList(ByVal index As Long, CompileMode As GLenum)
+    Call glNewList(index, CompileMode)
 End Sub
 Public Sub EndList()
     Call glEndList
 End Sub
-Public Sub CallList(ByVal Index As Long)
-    Call glCallList(Index)
+Public Sub CallList(ByVal index As Long)
+    Call glCallList(index)
 End Sub
-Public Sub CallLists(ByVal Index As Long, ByVal vType As GLenum, ByVal ptr As LongPtr)
-    Call glCallLists(Index, vType, ptr)
+Public Sub CallLists(ByVal index As Long, ByVal vType As GLenum, ByVal ptr As LongPtr)
+    Call glCallLists(index, vType, ptr)
 End Sub
-Public Sub DeleteLists(ByVal Index As Long, size As Long)
-    Call glDeleteLists(Index, size)
+Public Sub DeleteLists(ByVal index As Long, size As Long)
+    Call glDeleteLists(index, size)
 End Sub
 Public Sub listbase(ByVal base As Long)
     Call glListBase(base)
 End Sub
-Public Function IsList(ByVal Index As Long) As Boolean
-    IsList = glIsList(Index)
+Public Function IsList(ByVal index As Long) As Boolean
+    IsList = glIsList(index)
 End Function
 Public Sub RasterPos3d(ByVal X As Double, ByVal y As Double, ByVal z As Double)
     Call glRasterPos3d(X, y, z)
@@ -179,11 +188,21 @@ End Sub
 Public Sub PaintStart()
     Call wglMakeCurrent(hdc, hGLRC)
     DoEvents
-    Call CreateFontList(20, "Impact", 100, 1000)
-    Call CreateFontList(40, "Impact", 300, 2000)
-    Call CreateFontList(60, "Impact", 300, 3000)
-    Call CreateFontList(80, "Impact", 600, 4000)
+    Call CreateFontList(20, "Impact", 100, FONT_BASE_SMALL)
+    Call CreateFontList(40, "Impact", 300, FONT_BASE_NORMAL)
+    Call CreateFontList(60, "Impact", 300, FONT_BASE_LARGE)
+    Call CreateFontList(80, "Impact", 600, FONT_BASE_EXLARGE)
 End Sub
+Public Property Get UseUnicode() As Boolean
+    If glIsList(FONT_BASE_UNICODE) = 1 Then UseUnicode = True Else UseUnicode = False
+End Property
+Public Property Let UseUnicode(rhs As Boolean)
+    If rhs Then
+        If glIsList(FONT_BASE_UNICODE) <> 1 Then Call CreateFontList(24, "Meiryo UI", 1000, FONT_BASE_UNICODE, 65535, True)
+    Else
+        If glIsList(FONT_BASE_UNICODE) = 1 Then glDeleteLists FONT_BASE_UNICODE, 65535
+    End If
+End Property
 Public Sub PaintEnd()
     Call SwapBuffersA(hdc)
     Call wglMakeCurrent(0, 0)
@@ -230,8 +249,8 @@ End Sub
 Public Sub Color3d(ByVal red As Double, ByVal green As Double, ByVal blue As Double)
     Call glColor3d(red, green, blue)
 End Sub
-Public Sub Vertex2d(ByVal A As Double, ByVal b As Double)
-    Call glVertex2d(A, b)
+Public Sub Vertex2d(ByVal a As Double, ByVal b As Double)
+    Call glVertex2d(a, b)
 End Sub
 Public Sub Vertex3d(ByVal X As Double, ByVal y As Double, ByVal z As Double)
     Call glVertex3d(X, y, z)
@@ -287,8 +306,8 @@ End Sub
 Public Sub TexCoordPointer(ByVal size As Long, ByVal Gle As GLenum, ByVal Stride As Long, ByVal ptr As LongPtr)
     Call glTexCoordPointer(size, Gle, Stride, ptr)
 End Sub
-Public Sub TexCoord2d(ByVal s As Double, ByVal t As Double)
-    Call glTexCoord2d(s, t)
+Public Sub TexCoord2d(ByVal S As Double, ByVal t As Double)
+    Call glTexCoord2d(S, t)
 End Sub
 '//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Public Property Let hWnd(newPtr As LongPtr)

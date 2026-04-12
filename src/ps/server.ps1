@@ -95,7 +95,8 @@ while ($listener.IsListening) {
         $bytes = [IO.File]::ReadAllBytes($file)
         switch -Regex ($file) {
             '\.html$' { $resp.ContentType = "text/html; charset=utf-8" }
-            '\.js$'   { $resp.ContentType = "application/javascript" }
+            '\.js$'   { $resp.ContentType = "text/javascript; charset=utf-8"}
+            '\.mjs$'   { $resp.ContentType = "text/javascript; charset=utf-8"}
             '\.css$'  { $resp.ContentType = "text/css" }
             '\.txt$'  { $resp.ContentType = "text/plain" }
             '\.wasm$' { $resp.ContentType = "application/wasm" }
@@ -103,7 +104,7 @@ while ($listener.IsListening) {
             '\.bmp$'  { $resp.ContentType = "image/bmp" }
             '\.jpg$'  { $resp.ContentType = "image/jpeg" }
             '\.png$'  { $resp.ContentType = "image/png" }
-            default   { $resp.ContentType = "application/octet-stream" }
+            default   { $resp.ContentType = "text/javascript; charset=utf-8"  }
         }
         $resp.ContentLength64 = $bytes.Length
         $resp.OutputStream.Write($bytes, 0, $bytes.Length)

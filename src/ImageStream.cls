@@ -20,7 +20,7 @@ Private Declare PtrSafe Function GdipGetImageHeight Lib "gdiplus" (ByVal Image A
 Private Declare PtrSafe Function GdipDisposeImage Lib "gdiplus" (ByVal Image As LongPtr) As Long
 Private Declare PtrSafe Function GdipBitmapLockBits Lib "gdiplus" (ByVal Bitmap As LongPtr, ByRef Rect As Rect, ByVal flags As Long, ByVal PixelFormat As Long, lockedBitmapData As BitmapData) As Long
 Private Declare PtrSafe Function GdipBitmapUnlockBits Lib "gdiplus" (ByVal Bitmap As LongPtr, lockedBitmapData As BitmapData) As Long
-Private Declare PtrSafe Sub MoveMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByVal Destination As LongPtr, ByVal source As LongPtr, ByVal Length As Long)
+Private Declare PtrSafe Sub MoveMemory Lib "kernel32.dll" Alias "RtlMoveMemory" (ByVal Destination As LongPtr, ByVal source As LongPtr, ByVal length As Long)
 Private udtInput As GdiplusStartupInput
 Private bmpdata As BitmapData
 Private bsize As Long

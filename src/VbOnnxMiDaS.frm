@@ -13,23 +13,25 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 Implements IVbOnnx
 Private Const CFF As Double = 1 / 256
 Private vecs() As Vector3d
 Private texs() As Vector2d
+Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
-    IVbOnnx_Name = Me.TextBox1.Value
+    IVbOnnx_Name = TextBox1.Value
 End Property
 Private Property Get IVbOnnx_Info() As String
-    IVbOnnx_Info = Me.TextBox2.Value
+    IVbOnnx_Info = TextBox2.Value
 End Property
 Private Property Get IVbOnnx_JsCode() As String
-    IVbOnnx_JsCode = Me.TextBox3.Value
+    IVbOnnx_JsCode = TextBox3.Value
     ReDim vecs(0) As Vector3d
 End Property
 Private Property Get IVbOnnx_exLibs() As Collection
-    Dim arr As Variant: arr = Split(Me.TextBox4.Value, vbNewLine)
+    Dim arr As Variant: arr = Split(TextBox4.Value, vbNewLine)
     Dim tmp, coll As Collection: Set coll = New Collection
     For Each tmp In arr
         coll.Add Application.Clean(tmp)
@@ -75,16 +77,19 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
         End With
     End With
 End Function
-Private Sub IVbOnnx_Render(GLF As GLFrame, Results As Collection, Optional ByVal imageAspect As Double = 1#, Optional ByVal imageScale As Double = 1#)
+
+Private Sub IVbOnnx_Render(GLF As GLFrame, Parent As VbOnnxMain)
+    Dim ImageAspect As Double
+    ImageAspect = Parent.ImageWidth / (Parent.ImageHeight + 0.1)
     Dim depthA As Variant, d As Object
     Dim i As Long, h As Long, w As Long
     Dim hw1 As Long, hw2 As Long, hh1 As Long, hh2 As Long
-    Dim dw As Double: dw = (GLF.height * imageAspect) * CFF
+    Dim dw As Double: dw = (GLF.height * ImageAspect) * CFF
     Dim dh As Double: dh = (GLF.height) * CFF
     Dim size As Long
-    For Each d In Results
+    For Each d In Parent.OnnxResults
         With d
-            If .Exists("depth") Then
+            If .exists("depth") Then
                 If UBound(vecs) < 10 Then
                     size = (256 ^ 2) * 4 - 1
                     ReDim vecs(size) As Vector3d
@@ -132,8 +137,4 @@ Private Sub IVbOnnx_Render(GLF As GLFrame, Results As Collection, Optional ByVal
         .Disable GL_TEXTURE_2D
         .PopMatrix
     End With
-End Sub
-
-Private Sub UserForm_Click()
-
 End Sub

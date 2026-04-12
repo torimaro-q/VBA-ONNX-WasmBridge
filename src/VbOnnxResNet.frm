@@ -13,64 +13,64 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 Implements IVbOnnx
+Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
-    IVbOnnx_Name = Me.TextBox1.Value
+    IVbOnnx_Name = TextBox1.Value
 End Property
 Private Property Get IVbOnnx_Info() As String
-    IVbOnnx_Info = Me.TextBox2.Value
+    IVbOnnx_Info = TextBox2.Value
 End Property
 Private Property Get IVbOnnx_JsCode() As String
-    IVbOnnx_JsCode = Me.TextBox3.Value
+    IVbOnnx_JsCode = TextBox3.Value
 End Property
 Private Property Get IVbOnnx_exLibs() As Collection
-    Dim arr As Variant: arr = Split(Me.TextBox4.Value, vbNewLine)
+    Dim arr As Variant: arr = Split(TextBox4.Value, vbNewLine)
     Dim tmp, coll As Collection: Set coll = New Collection
     For Each tmp In arr
         coll.Add Application.Clean(tmp)
     Next tmp
     Set IVbOnnx_exLibs = coll
 End Property
-Private Sub IVbOnnx_Render(GLF As GLFrame, Results As Collection, Optional ByVal imageAspect As Double = 1#, Optional ByVal imageScale As Double = 1#)
-        Dim d As Object
-        Dim zofs As Double
-        Dim tX, tY, tw, th, score, chr() As Byte
-        Dim idx As Long
-        Dim hh As Double: hh = GLF.height * 0.5
-        Dim hw As Double: hw = hh * imageAspect
-        idx = 0
-        With GLF.gl
-            .Enable GL_TEXTURE_2D
-                .Begin GL_QUADS
-                    .TexCoord2d 0, 1: .Vertex3d -hw, -hh, 1
-                    .TexCoord2d 1, 1: .Vertex3d hw, -hh, 1
-                    .TexCoord2d 1, 0: .Vertex3d hw, hh, 1
-                    .TexCoord2d 0, 0: .Vertex3d -hw, hh, 1
-                .End1
-            .Disable GL_TEXTURE_2D
-            For Each d In Results
-                idx = idx + 1
-                    With d
-                        score = d.Item("probability")
-                        chr = StrConv(d.Item("label") & ": " & format(score, "0.0%"), vbFromUnicode)
-                    End With
-                    If score > 0.3 Then
-                        .listbase 3000
-                        .Color4f 1#, 1#, 1#, 1#
-                        .RasterPos3d -hw, idx * 20, 10
-                        .CallLists UBound(chr) + 1, GL_UNSIGNED_BYTE, VarPtr(chr(0))
-                        .listbase 0
-                    End If
-                Next d
-        End With
+Private Sub IVbOnnx_Render(GLF As GLFrame, Parent As VbOnnxMain)
+    Dim d As Object, score, chr() As Byte, idx As Long
+    Dim hh As Double: hh = GLF.height * 0.5
+    Dim hw As Double: hw = hh * (Parent.ImageWidth / (Parent.ImageHeight + 0.1))
+    idx = 0
+    With GLF.gl
+        .Enable GL_TEXTURE_2D
+            .Begin GL_QUADS
+                .TexCoord2d 0, 1: .Vertex3d -hw, -hh, 1
+                .TexCoord2d 1, 1: .Vertex3d hw, -hh, 1
+                .TexCoord2d 1, 0: .Vertex3d hw, hh, 1
+                .TexCoord2d 0, 0: .Vertex3d -hw, hh, 1
+            .End1
+        .Disable GL_TEXTURE_2D
+        For Each d In Parent.OnnxResults
+            idx = idx + 1
+            With d
+                score = d.Item("probability")
+                chr = StrConv(d.Item("label") & ": " & format(score, "0.0%"), vbFromUnicode)
+            End With
+            If score > 0.3 Then
+                .listbase FONT_BASE_LARGE
+                .Color4f 1#, 1#, 1#, 1#
+                .RasterPos3d -hw, idx * 20, 10
+                .CallLists UBound(chr) + 1, GL_UNSIGNED_BYTE, VarPtr(chr(0))
+                .Color4f 0#, 0#, 0#, 1#
+                .RasterPos3d -hw + 2, idx * 20 - 2, 8
+                .CallLists UBound(chr) + 1, GL_UNSIGNED_BYTE, VarPtr(chr(0))
+                .listbase 0
+            End If
+        Next d
+    End With
 End Sub
 Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optional Left As Double = 0, Optional Top As Double = 0) As ChartObject
-    Dim i As Long, lnColor As Long, asp As Double
-    Dim tX, tY, w, h
+    Dim i As Long, lnColor As Long, asp As Double, tX
     asp = Parent.ImageWidth / (Parent.ImageHeight + 0.1)
-    Dim csize
-    csize = 300
+    Dim csize: csize = 300
     Set IVbOnnx_Export = target.ChartObjects.Add(Left:=Left, Top:=Top, width:=csize * asp, height:=csize)
     With IVbOnnx_Export
         .name = "bar" & format(Now(), "yyyymmdd-hhmmss")
@@ -135,18 +135,24 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                         .size = 20
                         .Bold = msoTrue
                         .Caps = msoNoCaps
-                        .Fill.Visible = msoTrue
-                        .Fill.ForeColor.RGB = RGB(254, 254, 254)
-                        .Fill.Transparency = 0
-                        .Fill.Solid
-                        .Line.Visible = msoTrue
-                        .Line.ForeColor.ObjectThemeColor = msoThemeColorAccent1
-                        .Line.ForeColor.TintAndShade = 0
-                        .Line.ForeColor.Brightness = 0
-                        .Line.Transparency = 0
-                        .Line.weight = 0.75
-                        .Line.DashStyle = msoLineSolid
-                        .Line.style = msoLineSingle
+                        With .Fill
+                            .Visible = msoTrue
+                            .ForeColor.RGB = RGB(254, 254, 254)
+                            .Transparency = 0
+                            .Solid
+                        End With
+                        With .Line
+                            .Visible = msoTrue
+                            .Transparency = 0
+                            .weight = 0.75
+                            .DashStyle = msoLineSolid
+                            .style = msoLineSingle
+                            With .ForeColor
+                                .ObjectThemeColor = msoThemeColorAccent1
+                                .TintAndShade = 0
+                                .Brightness = 0
+                            End With
+                        End With
                         .Spacing = 0.5
                     End With
                 End If
@@ -155,7 +161,3 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
     End With
 err:
 End Function
-
-Private Sub UserForm_Click()
-
-End Sub

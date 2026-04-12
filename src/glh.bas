@@ -180,13 +180,13 @@ Public Type Color4
     R As Single
     G As Single
     b As Single
-    A As Single
+    a As Single
 End Type
-Public Type B4
+Public Type b4
     b(3) As Byte
 End Type
 Public Type S1
-    s As Single
+    S As Single
 End Type
 Public Type L1
     L As Long
@@ -201,15 +201,20 @@ Public Const DEFAULT_QUALITY As Long = 0
 Public Const DEFAULT_PITCH As Long = 0
 Public Const FF_SCRIPT As Long = 64
 Public Const ANTIALIASED_QUALITY As Long = 4
-Public Function B2Single(ByRef B1, ByRef B2, ByRef B3, ByRef B4) As Single
-    Dim X As B4, y As S1
-    With X: .b(0) = B1: .b(1) = B2: .b(2) = B3: .b(3) = B4: End With
+Public Const FONT_BASE_SMALL = 1000
+Public Const FONT_BASE_NORMAL = 2000
+Public Const FONT_BASE_LARGE = 3000
+Public Const FONT_BASE_EXLARGE = 4000
+Public Const FONT_BASE_UNICODE = 5000
+Public Function B2Single(ByRef B1, ByRef B2, ByRef B3, ByRef b4) As Single
+    Dim X As b4, y As S1
+    With X: .b(0) = B1: .b(1) = B2: .b(2) = B3: .b(3) = b4: End With
     LSet y = X
-    B2Single = y.s
+    B2Single = y.S
 End Function
-Public Function B2Long(ByRef B1, ByRef B2, ByRef B3, ByRef B4) As Long
-    Dim X As B4, y As L1
-    With X: .b(0) = B1: .b(1) = B2: .b(2) = B3: .b(3) = B4: End With
+Public Function B2Long(ByRef B1, ByRef B2, ByRef B3, ByRef b4) As Long
+    Dim X As b4, y As L1
+    With X: .b(0) = B1: .b(1) = B2: .b(2) = B3: .b(3) = b4: End With
     LSet y = X
     B2Long = y.L
 End Function
@@ -222,6 +227,6 @@ End Function
 Public Function Vector4d(ByVal X As Double, ByVal y As Double, ByVal z As Double, ByVal w As Double) As Vector4d
     With Vector4d: .X = X: .y = y: .z = z: .w = w: End With
 End Function
-Public Function Color4(ByVal R As Single, ByVal G As Single, ByVal b As Single, ByVal A As Single) As Color4
-    With Color4: .A = A: .b = b: .G = G: .R = R: End With
+Public Function Color4(ByVal R As Single, ByVal G As Single, ByVal b As Single, ByVal a As Single) As Color4
+    With Color4: .a = a: .b = b: .G = G: .R = R: End With
 End Function

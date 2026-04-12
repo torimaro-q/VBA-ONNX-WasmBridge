@@ -17,18 +17,19 @@ Attribute VB_Exposed = False
 Option Explicit
 Implements IVbOnnx
 Private b() As Byte, fpath As String, iw As Long, ih As Long
+Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
-    IVbOnnx_Name = Me.TextBox1.Value
+    IVbOnnx_Name = TextBox1.Value
 End Property
 Private Property Get IVbOnnx_Info() As String
-    IVbOnnx_Info = Me.TextBox2.Value
+    IVbOnnx_Info = TextBox2.Value
 End Property
 Private Property Get IVbOnnx_JsCode() As String
-    IVbOnnx_JsCode = Me.TextBox3.Value
+    IVbOnnx_JsCode = TextBox3.Value
     ReDim b(0) As Byte
 End Property
 Private Property Get IVbOnnx_exLibs() As Collection
-    Dim arr As Variant: arr = Split(Me.TextBox4.Value, vbNewLine)
+    Dim arr As Variant: arr = Split(TextBox4.Value, vbNewLine)
     Dim tmp, coll As Collection: Set coll = New Collection
     For Each tmp In arr
         coll.Add Application.Clean(tmp)
@@ -55,10 +56,11 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
         End With
     End If
 End Function
-Private Sub IVbOnnx_Render(GLF As GLFrame, Results As Collection, Optional ByVal imageAspect As Double = 1#, Optional ByVal imageScale As Double = 1#)
+
+Private Sub IVbOnnx_Render(GLF As GLFrame, Parent As VbOnnxMain)
     Dim hh As Double: hh = GLF.height * 0.5
-    Dim hw As Double: hw = hh * imageAspect
-    If CheckBuffer(Results) Then
+    Dim hw As Double: hw = hh * (Parent.ImageWidth / (Parent.ImageHeight + 0.1))
+    If CheckBuffer(Parent.OnnxResults) Then
         With GLF
             With .gl
                 .GenTextures 1, 2
@@ -82,12 +84,12 @@ Private Sub IVbOnnx_Render(GLF As GLFrame, Results As Collection, Optional ByVal
         End With
     End If
 End Sub
-Private Function CheckBuffer(ByRef Results As Collection) As Boolean
+Private Function CheckBuffer(ByRef results As Collection) As Boolean
 On Error GoTo err
     Dim arrRaw, bsize As Long, i As Long, j As Long
     If UBound(b) < 10 Then
-        With Results.Item(1)
-            If .Exists("array") Then
+        With results.Item(1)
+            If .exists("array") Then
                 arrRaw = .Item("array")
                 iw = .Item("width")
                 ih = .Item("height")
@@ -115,6 +117,3 @@ err:
     CheckBuffer = False
 End Function
 
-Private Sub UserForm_Click()
-
-End Sub

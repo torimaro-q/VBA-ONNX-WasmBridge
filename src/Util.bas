@@ -16,7 +16,7 @@ Public Type RGBA
     R As Byte
     G As Byte
     b As Byte
-    A As Byte
+    a As Byte
 End Type
 Public Type BITMAPINFO
     bmiHeader As BITMAPINFOHEADER
@@ -69,7 +69,13 @@ Public Type EncoderParameters
     Parameter(15) As EncoderParameter
 End Type
 Public Type L
-    V As Long
+    v As Long
+End Type
+Public Type Dtyp
+    v As Double
+End Type
+Public Type Styp
+    v As Single
 End Type
 Public Const ENCODER_BMP    As String = "{557CF400-1A04-11D3-9A73-0000F81EF32E}"
 Public Const ENCODER_JPG    As String = "{557CF401-1A04-11D3-9A73-0000F81EF32E}"
@@ -79,14 +85,13 @@ Public Const CLMASK As Long = &H80000000
 Public Const LOGPIXELSX As Long = 88
 Public Const WS_EX_DLGMODALFRAME = &H1&
 Public Const DEG2RAD As Double = 0.017453293
-
 Public Function json2coll(ByVal json As String) As Collection
     Dim buf As Variant: buf = Split(Replace(Replace(json, "]", ""), "[", ""), "{")
     Dim coll As Collection: Set coll = New Collection
     Dim b As Variant
     For Each b In buf
         If Len(b) > 1 Then
-            Dim elms, e, k, V, spl
+            Dim elms, e, k, v, spl
             Dim dic As Object: Set dic = CreateObject("Scripting.Dictionary")
             With dic
                 elms = Split(Replace(b, "}", ""), ",""")
@@ -94,14 +99,14 @@ Public Function json2coll(ByVal json As String) As Collection
                     If Len(e) > 1 Then
                         spl = Split(e, ":")
                         k = Replace(CStr(spl(0)), """", "")
-                        V = Replace(CStr(spl(1)), """", "")
-                        If IsNumeric(V) Then
-                            .Add k, CDbl(V)
+                        v = Replace(CStr(spl(1)), """", "")
+                        If v Like "*,*?" Then
+                            .Add k, Split(v, ",")
                         Else
-                            If V Like "*,*" Then
-                                .Add k, Split(V, ",")
+                            If IsNumeric(v) Then
+                                .Add k, CDbl(v)
                             Else
-                                .Add k, V
+                                .Add k, v
                             End If
                         End If
                     End If
@@ -122,3 +127,14 @@ Public Sub WriteTextFile(ByVal filepath As String, ByVal fileText As String)
         Print #fileNum, fileText
     Close #fileNum
 End Sub
+Public Function ModelArray(ParamArray models() As Variant) As IVbOnnx()
+    Dim m() As IVbOnnx, midx As Long, i As Long
+    ReDim m(100) As IVbOnnx
+    On Error GoTo err
+    For i = LBound(models) To UBound(models)
+        Set m(midx) = models(i): midx = midx + 1
+    Next i
+    If midx > 0 Then ReDim Preserve m(midx - 1) As IVbOnnx
+    ModelArray = m
+err:
+End Function

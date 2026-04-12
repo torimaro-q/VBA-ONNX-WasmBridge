@@ -13,10 +13,9 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
+
 Public Property Get SeverCode() As String
     SeverCode = Me.TextBox1.Value
 End Property
 
-Private Sub TextBox1_Change()
-
-End Sub
