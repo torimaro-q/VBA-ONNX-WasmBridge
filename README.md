@@ -26,6 +26,7 @@ It is intended **for learning and reference purposes only**, not for production 
 - MiDaS
 - Fast Neural Style Transfer
 - Anime GAN v2
+- OnnxOCR
 
 ## Advantages / 利点
 
@@ -98,10 +99,13 @@ It is intended **for learning and reference purposes only**, not for production 
 - ONNX models hosted on GitHub Model Zoo use LFS, so they cannot be downloaded automatically.  
 - Users must manually download the ONNX file and place it in the Temp folder.  
 - Please note that any ONNX models or class label files (e.g., ImageNet, COCO) downloaded from external sources must be used in accordance with the license terms provided by their respective distributors.
+- Please make the input file name alphanumeric only, with no symbols.
 
 - GitHub Model Zoo 上の ONNX モデルは LFS を利用しているため、自動ダウンロードはできません。  
 - ユーザーが手動で ONNX ファイルをダウンロードし、Temp フォルダに配置する必要があります。  
 - また、外部サイトからダウンロードした ONNX モデルやクラスラベルファイル（ImageNet、COCO など）は、配布元が定めるライセンス条件に従ってご利用ください。
+- 入力ファイル名は英数字のみ、記号なしにしてください。
+
 ---
 
 ## Folder Structure / フォルダ構成
