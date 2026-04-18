@@ -186,7 +186,7 @@ Public Type b4
     b(3) As Byte
 End Type
 Public Type S1
-    S As Single
+    s As Single
 End Type
 Public Type L1
     L As Long
@@ -210,7 +210,7 @@ Public Function B2Single(ByRef B1, ByRef B2, ByRef B3, ByRef b4) As Single
     Dim X As b4, y As S1
     With X: .b(0) = B1: .b(1) = B2: .b(2) = B3: .b(3) = b4: End With
     LSet y = X
-    B2Single = y.S
+    B2Single = y.s
 End Function
 Public Function B2Long(ByRef B1, ByRef B2, ByRef B3, ByRef b4) As Long
     Dim X As b4, y As L1

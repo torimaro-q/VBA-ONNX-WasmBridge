@@ -8,8 +8,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
-Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
-Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Long
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
 Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hdc As LongPtr, ByVal hObject As LongPtr) As LongPtr
 Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
 Private Declare PtrSafe Function ChoosePixelFormat Lib "gdi32" (ByVal hdc As LongPtr, ByRef pfd As PIXELFORMATDESCRIPTOR) As Long
@@ -83,7 +83,7 @@ Private Declare PtrSafe Sub glTexImage2D Lib "opengl32.dll" (ByVal GLenum As Lon
 Private Declare PtrSafe Sub gluBuild2DMipmaps Lib "glu32.dll" (ByVal GLenum1 As Long, ByVal GLenum2 As Long, _
                                                               ByVal width As Long, ByVal height As Long, _
                                                               ByVal GLenum3 As Long, ByVal GLenum4 As Long, ByVal PixelPtr As LongPtr)
-Private Declare PtrSafe Sub glTexCoord2d Lib "opengl32.dll" (ByVal S As Double, ByVal t As Double)
+Private Declare PtrSafe Sub glTexCoord2d Lib "opengl32.dll" (ByVal s As Double, ByVal t As Double)
 
 Private Declare PtrSafe Sub glGenTextures Lib "opengl32.dll" (ByVal n As Long, ByRef textures As Long)
 Private Declare PtrSafe Sub glBindTexture Lib "opengl32.dll" (ByVal target As Long, ByVal texture As Long)
@@ -196,8 +196,8 @@ End Sub
 Public Property Get UseUnicode() As Boolean
     If glIsList(FONT_BASE_UNICODE) = 1 Then UseUnicode = True Else UseUnicode = False
 End Property
-Public Property Let UseUnicode(rhs As Boolean)
-    If rhs Then
+Public Property Let UseUnicode(RHS As Boolean)
+    If RHS Then
         If glIsList(FONT_BASE_UNICODE) <> 1 Then Call CreateFontList(24, "Meiryo UI", 1000, FONT_BASE_UNICODE, 65535, True)
     Else
         If glIsList(FONT_BASE_UNICODE) = 1 Then glDeleteLists FONT_BASE_UNICODE, 65535
@@ -306,16 +306,16 @@ End Sub
 Public Sub TexCoordPointer(ByVal size As Long, ByVal Gle As GLenum, ByVal Stride As Long, ByVal ptr As LongPtr)
     Call glTexCoordPointer(size, Gle, Stride, ptr)
 End Sub
-Public Sub TexCoord2d(ByVal S As Double, ByVal t As Double)
-    Call glTexCoord2d(S, t)
+Public Sub TexCoord2d(ByVal s As Double, ByVal t As Double)
+    Call glTexCoord2d(s, t)
 End Sub
 '//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Public Property Let hWnd(newPtr As LongPtr)
+Public Property Let hwnd(newPtr As LongPtr)
     myhwnd = newPtr
     Call Inithwnd
 End Property
-Public Property Get hWnd() As LongPtr
-    hWnd = myhwnd
+Public Property Get hwnd() As LongPtr
+    hwnd = myhwnd
 End Property
 Private Sub Inithwnd()
     If hdc <> 0 Then Releasehwnd

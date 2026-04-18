@@ -16,6 +16,8 @@ Public Property Get JsCode() As String
 End Property
 Public Property Get exLibs() As Collection
 End Property
+Public Property Get Editor() As MSForms.TextBox
+End Property
 Public Sub Render(ByRef GLF As GLFrame, Parent As VbOnnxMain)
 End Sub
 Public Function Export(ByRef target As Worksheet, ByRef Parent As VbOnnxMain, Optional Left As Double = 0, Optional Top As Double = 0) As ChartObject

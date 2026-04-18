@@ -15,23 +15,29 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Option Explicit
 Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As Long)
-Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAccessible As Object, ByRef hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAccessible As Object, ByRef hwnd As LongPtr) As LongPtr
 #If Win64 Then
-    Private Declare PtrSafe Function GetWindowLongPtr Lib "user32" Alias "GetWindowLongPtrA" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As LongPtr
-    Private Declare PtrSafe Function SetWindowLongPtr Lib "user32" Alias "SetWindowLongPtrA" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetWindowLongPtr Lib "user32" Alias "GetWindowLongPtrA" (ByVal hwnd As LongPtr, ByVal nIndex As Long) As LongPtr
+    Private Declare PtrSafe Function SetWindowLongPtr Lib "user32" Alias "SetWindowLongPtrA" (ByVal hwnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As LongPtr) As LongPtr
 #Else
     Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
     Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
 #End If
 Private Const GWL_STYLE As Long = -16, WS_THICKFRAME = &H40000, ICO_SZ As Long = 36
-Private hWnd As LongPtr, style As LongPtr
+Private hwnd As LongPtr, style As LongPtr
 Private WithEvents OnnxMain As VbOnnxMain
 Attribute OnnxMain.VB_VarHelpID = -1
 Private WithEvents GLF As GLFrame
 Attribute GLF.VB_VarHelpID = -1
 Private models As Object, busy As Boolean, slX As Double, slY As Double, pitch As Double, roll As Double, yaw As Double, zm As Double
+Private rch As RichEdit
+Private Sub ApplyRichEdit(ByRef target As MSForms.TextBox)
+    If rch Is Nothing Then Set rch = New RichEdit
+    rch.Init target
+End Sub
 Private Sub Frame2_Click(): DoEvents: End Sub
 Private Sub GLF_Paint()
     MousePointer = fmMousePointerHourGlass
@@ -63,10 +69,11 @@ End Sub
 Public Sub ShowModelForm()
     Dim tname As String: tname = TypeName(OnnxMain.OnnxModel)
     Dim obj As Object: Set obj = UserForms.Add(tname)
+    ApplyRichEdit OnnxMain.COnx(obj).Editor
     obj.Show vbModal
 End Sub
 Private Sub LabelModel_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
-    If MsgBox("Do you want to export the modelÅfs JavaScript code as a file?", vbYesNo) = vbYes Then
+    If MsgBox("Do you want to export the modelÔøΩfs JavaScript code as a file?", vbYesNo) = vbYes Then
         Dim fpath As String: fpath = Application.GetSaveAsFilename(OnnxMain.OnnxModel.name & ".js", "javascript(*.js),*.js")
         If fpath Like "*.js" Then OnnxMain.ExportModelCode fpath
     End If
@@ -106,7 +113,7 @@ err:
     Repaint
     Call GLF_Paint
 End Sub
-Private Sub Label1_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label1_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     With Label1
         busy = True
         .BackColor = &HFFCCCC
@@ -117,20 +124,20 @@ Private Sub Label1_MouseDown(ByVal Button As Integer, ByVal shift As Integer, By
         .BackColor = &HFFFFFF
     End With
 End Sub
-Private Sub Label2_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label2_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     ButtonAction Label2, "OpenTempFolder", OnnxMain
 End Sub
-Private Sub Label3_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label3_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     ButtonAction Label3, "OpenEdgeForDownload", OnnxMain
 End Sub
-Private Sub Label4_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label4_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     ButtonAction Label4, "Export", OnnxMain
 End Sub
-Private Sub Label5_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label5_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     LabelLibs.Caption = ""
     ButtonAction Label5, "EnsureRuntimeFiles", OnnxMain
 End Sub
-Private Sub Label6_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label6_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     ButtonAction Label6, "ShowModelForm", Me
 End Sub
 Private Sub UserForm_Resize()
@@ -191,16 +198,16 @@ Private Sub UserForm_Terminate()
     Set OnnxMain = Nothing
 End Sub
 Private Sub Resizable()
-    WindowFromAccessibleObject Me, hWnd
+    WindowFromAccessibleObject Me, hwnd
     #If Win64 Then
-        style = GetWindowLongPtr(hWnd, GWL_STYLE)
+        style = GetWindowLongPtr(hwnd, GWL_STYLE)
     #Else
-        style = GetWindowLong(hWnd, GWL_STYLE)
+        style = GetWindowLong(hwnd, GWL_STYLE)
     #End If
     style = (style Or WS_THICKFRAME Or &H30000)
     #If Win64 Then
-        SetWindowLongPtr hWnd, GWL_STYLE, style
+        SetWindowLongPtr hwnd, GWL_STYLE, style
     #Else
-        SetWindowLong hWnd, GWL_STYLE, style
+        SetWindowLong hwnd, GWL_STYLE, style
     #End If
 End Sub

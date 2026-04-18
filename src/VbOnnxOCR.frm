@@ -14,10 +14,14 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Option Explicit
 Implements IVbOnnx
 Private WithEvents myglf As GLFrame, selx As Double, sely As Double, flg As Boolean
 Attribute myglf.VB_VarHelpID = -1
+Private Property Get IVbOnnx_Editor() As MSForms.IMdcText
+    Set IVbOnnx_Editor = Me.TextBox3
+End Property
 Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
     IVbOnnx_Name = TextBox1.Value
@@ -174,7 +178,7 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                             tH = .Item("h")
                             If tX < 0 Then tX = 0
                         End With
-                        lnColor = .border.Color
+                        lnColor = .border.color
                         .name = Parent.OnnxResults.Item(i).Item("label")
                         If Abs(pY - tY) > 20 Then capAll = capAll & vbNewLine & .name Else capAll = capAll & " " & .name
                         capAll = Replace(Replace(Replace(capAll, "  ", " "), vbNewLine & vbNewLine, vbNewLine), vbNewLine & " ", vbNewLine)

@@ -11,17 +11,17 @@ Option Explicit
 Private WithEvents Frame As MSForms.Frame
 Attribute Frame.VB_VarHelpID = -1
 Private Declare PtrSafe Function GetSysColor Lib "user32" (ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hWnd As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
-Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hWnd As LongPtr, ByVal hdc As LongPtr) As Long
+Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
 Private Const Inv255 As Double = 1 / 255
 Public Event Load()
 Public Event Paint()
 Public Event DblClick()
 Public Event Click(ByVal X As Double, y As Double, Button As Integer)
 Public Event DragDelta(ByVal DeltaX As Double, DeltaY As Double, Button As Integer)
-Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAcessible As Object, ByRef hWnd As LongPtr) As LongPtr
-Private px As Double, pY As Double, Tw2Px As Double
+Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAcessible As Object, ByRef hwnd As LongPtr) As LongPtr
+Private px As Double, pY As Double, TW2PX As Double
 Public gl As OpenGL
 Private Sub Class_Terminate()
     gl.PaintEnd
@@ -30,31 +30,31 @@ End Sub
 Private Sub Frame_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     RaiseEvent DblClick
 End Sub
-Private Sub Frame_MouseDown(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
-    px = Tw2Px * X
-    pY = Tw2Px * y
+Private Sub Frame_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+    px = TW2PX * X
+    pY = TW2PX * y
     RaiseEvent Click(px, pY, Button)
 End Sub
-Private Sub Frame_MouseMove(ByVal Button As Integer, ByVal shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Frame_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
     If Button = 0 Then Exit Sub
-    RaiseEvent DragDelta(px - Tw2Px * X, pY - Tw2Px * y, Button)
-    px = Tw2Px * X: pY = Tw2Px * y
+    RaiseEvent DragDelta(px - TW2PX * X, pY - TW2PX * y, Button)
+    px = TW2PX * X: pY = TW2PX * y
 End Sub
 Public Sub Refresh()
     RaiseEvent Paint
 End Sub
 Public Property Get width() As Double
     If Frame Is Nothing Then Exit Sub
-    width = Frame.width * Tw2Px
+    width = Frame.width * TW2PX
 End Property
 Public Property Get height() As Double
     If Frame Is Nothing Then Exit Sub
-    height = Frame.height * Tw2Px
+    height = Frame.height * TW2PX
 End Property
 Public Sub Init(ByRef TargetFrame As MSForms.Frame)
     Dim hw As LongPtr
     Set gl = New OpenGL
-    Tw2Px = GetDPI() / 72
+    TW2PX = GetDPI() / 72
     DoEvents
     WindowFromAccessibleObject TargetFrame, hw
     With TargetFrame
@@ -64,7 +64,7 @@ Public Sub Init(ByRef TargetFrame As MSForms.Frame)
     Dim bColor As Color4
     bColor = Rgb2Color4(TargetFrame.BackColor)
     With gl
-        .hWnd = hw
+        .hwnd = hw
         .PaintStart
         .ClearColor bColor.R, bColor.G, bColor.b, bColor.a
         .Enable GL_DEPTH_TEST

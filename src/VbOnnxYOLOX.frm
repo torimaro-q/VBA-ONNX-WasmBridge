@@ -14,10 +14,14 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Option Explicit
 Implements IVbOnnx
 Private WithEvents myglf As GLFrame, selx As Double, sely As Double
 Attribute myglf.VB_VarHelpID = -1
+Private Property Get IVbOnnx_Editor() As MSForms.IMdcText
+    Set IVbOnnx_Editor = Me.TextBox3
+End Property
 Private Sub UserForm_Click(): DoEvents: End Sub
 Private Sub myglf_Click(ByVal X As Double, y As Double, Button As Integer)
     'Write the processing using the result of the hit test (OpenGL) here.
@@ -130,7 +134,7 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
         'On Error GoTo err
             For i = 1 To Parent.OnnxResults.Count
                 With .SeriesCollection.NewSeries
-                    lnColor = .border.Color
+                    lnColor = .border.color
                     .name = Parent.OnnxResults.Item(i).Item("label") & ":" & format(Parent.OnnxResults.Item(i).Item("score"), "0.0%")
                     .ChartType = xlXYScatterLinesNoMarkers
                     With Parent.OnnxResults.Item(i)

@@ -14,9 +14,13 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Option Explicit
 Implements IVbOnnx
 Private b() As Byte, fpath As String, iw As Long, ih As Long
+Private Property Get IVbOnnx_Editor() As MSForms.IMdcText
+    Set IVbOnnx_Editor = Me.TextBox3
+End Property
 Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
     IVbOnnx_Name = TextBox1.Value

@@ -14,11 +14,15 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
 Option Explicit
 Implements IVbOnnx
 Private Const CFF As Double = 1 / 256
 Private vecs() As Vector3d
 Private texs() As Vector2d
+Private Property Get IVbOnnx_Editor() As MSForms.IMdcText
+    Set IVbOnnx_Editor = Me.TextBox3
+End Property
 Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
     IVbOnnx_Name = TextBox1.Value
@@ -55,7 +59,7 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
             For i = 0 To 255
                 If i = 255 Then Exit For
                 With .SeriesCollection.NewSeries
-                    lnColor = .border.Color
+                    lnColor = .border.color
                     .name = CStr(i)
                     Dim arr(): ReDim arr(255)
                     Dim dep(): ReDim dep(255)
