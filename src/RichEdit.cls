@@ -52,20 +52,20 @@ Private Type CHARFORMAT2
     crTextColor As Long '24
     bCharSet As Byte '25
     bPitchAndFamily As Byte '26
-    szFaceName(0 To 32 - 1) As Byte '58
-    wPad2 As Integer '60
-    wWeight As Integer '62
-    sSpacing As Integer '64
-    crBackColor As Long '68
-    lcid As Long '72
-    dwReserved As Long '76
-    sStyle As Integer '78
-    wKerning As Integer '80
-    bUnderlineType As Byte '81
-    bAnimation As Byte '82
-    bRevAuthor As Byte '83
-    bUnderlineColor As Byte '84
-    space(0 To 32 - 1) As Byte '116
+    szFaceName(0 To 64 - 1) As Byte
+    wPad2 As Integer
+    wWeight As Integer
+    sSpacing As Integer
+    crBackColor As Long
+    lcid As Long
+    dwReserved As Long
+    sStyle As Integer
+    wKerning As Integer
+    bUnderlineType As Byte
+    bAnimation As Byte
+    bRevAuthor As Byte
+    bUnderlineColor As Byte
+    'space(0 To 32 - 1) As Byte '116
 End Type
 Private Const MY_RICH_EDIT_STYLE As Long = WS_CHILD Or WS_VISIBLE Or ES_MULTILINE Or ES_AUTOVSCROLL Or ES_AUTOHSCROLL Or WS_VSCROLL Or ES_DISABLENOSCROLL
 Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR
