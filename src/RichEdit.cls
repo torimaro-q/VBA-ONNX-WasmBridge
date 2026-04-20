@@ -11,17 +11,17 @@ Option Explicit
 Private myCtr As MSForms.Control
 Private WithEvents myFrm As MSForms.Frame
 Attribute myFrm.VB_VarHelpID = -1
-Private WithEvents myTBox As MSForms.TextBox
-Attribute myTBox.VB_VarHelpID = -1
+Private WithEvents myTbx As MSForms.TextBox
+Attribute myTbx.VB_VarHelpID = -1
 Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (pDest As LongPtr, pSource As LongPtr, ByVal dwLength As Long)
 Private Declare PtrSafe Function GetModuleHandle Lib "kernel32" Alias "GetModuleHandleA" (ByVal lpModuleName As String) As LongPtr
 Private Declare PtrSafe Function LoadLibrary Lib "kernel32" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As LongPtr
 Private Declare PtrSafe Function FreeLibrary Lib "kernel32" (ByVal hLibModule As LongPtr) As Long
 Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAccessible As Object, ByRef hwnd As LongPtr) As LongPtr
-Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExA" (ByVal dwExStyle As Long, ByVal lpClassName As String, ByVal lpWindowName As String, ByVal dwStyle As Long, ByVal X As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
+Private Declare PtrSafe Function CreateWindowEx Lib "user32" Alias "CreateWindowExA" (ByVal dwExStyle As Long, ByVal lpClassName As String, ByVal lpWindowName As String, ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hWndParent As LongPtr, ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
 Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hwnd As LongPtr) As Long
 Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageW" (ByVal hwnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
-Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hwnd As LongPtr, ByVal X As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hwnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
 Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
 Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
@@ -40,7 +40,7 @@ Private Const EM_REPLACESEL = &HC2, EM_GETLINECOUNT = &HBA, EM_LINEINDEX = &HBB,
 Private Const EM_GETLINE = &HC4, EM_LINEFROMCHAR = &HC9
 Private Type POINTAPI
     X As Long
-    y As Long
+    Y As Long
 End Type
 Private Type CHARFORMAT2
     cbSize As Integer '2
@@ -65,27 +65,28 @@ Private Type CHARFORMAT2
     bAnimation As Byte
     bRevAuthor As Byte
     bUnderlineColor As Byte
-    'space(0 To 32 - 1) As Byte '116
 End Type
 Private Const MY_RICH_EDIT_STYLE As Long = WS_CHILD Or WS_VISIBLE Or ES_MULTILINE Or ES_AUTOVSCROLL Or ES_AUTOHSCROLL Or WS_VSCROLL Or ES_DISABLENOSCROLL
 Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR
+Private MY_FONT_COLOR  As Long, MY_BACK_COLOR As Long, TW2PX As Double
 Private Const PAD As Long = 2
-Private DEFAULT_FONT_COLOR  As Long, DEFAULT_BACK_COLOR As Long, TW2PX As Double
 Public PtnDic As Object
-Private IsInited As Boolean, regex As Object, LibPtr As LongPtr, cf As CHARFORMAT2
-Private RchHw As LongPtr, FrmHw As LongPtr, tmpHw As LongPtr, bufText As String, preText As String
+Private IsInited As Boolean, Reg As Object, LibPtr As LongPtr, CF2 As CHARFORMAT2
+Private rHw As LongPtr, fHw As LongPtr, tHw As LongPtr, buf As String, pre As String
 Private Sub SetColor(ByRef startPos As Long, ByRef length As Long, ByRef color As Long)
-    cf.crTextColor = color
+    CF2.crTextColor = color
     Dim rh As LongPtr: rh = RichHw
     Call SendMessage(rh, EM_SETSEL, startPos, startPos + length)
-    Call SendMessage(rh, EM_SETCHARFORMAT, SCF_SELECTION, VarPtr(cf))
+    Call SendMessage(rh, EM_SETCHARFORMAT, SCF_SELECTION, VarPtr(CF2))
 End Sub
 Private Sub myFrm_KeyUp(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
     If KeyCode = vbKeyReturn Or KeyCode = vbKeyUp Or KeyCode = vbKeyDown Then
         Call Highlight
-        bufText = Me.RichText
-        If bufText <> preText Then myTBox.Value = Me.RichText
-        preText = bufText
+        buf = Me.RichText
+        If buf <> pre Then
+            myTbx.Value = buf
+            pre = buf
+        End If
         KeyCode = 0
     End If
 End Sub
@@ -102,8 +103,8 @@ Private Sub Highlight()
     SendMessage rh, WM_SETREDRAW, 0, 0
     SendMessage rh, EM_GETSEL, VarPtr(s), VarPtr(e)
     SendMessage rh, EM_GETSCROLLPOS, 0, VarPtr(scrollPos)
-    SetColor 0, Len(txt), DEFAULT_FONT_COLOR
-    With regex
+    SetColor 0, Len(txt), MY_FONT_COLOR
+    With Reg
         For Each pkey In PtnDic.keys
             .Pattern = pkey
             cl = PtnDic.Item(pkey)
@@ -122,14 +123,14 @@ End Sub
 Public Property Get RichHw()
     If IsInited = False Then Exit Property
     With myCtr
-        tmpHw = .[_GethWnd]
-        If FrmHw <> tmpHw Then
-            DestroyWindow RchHw
-            FrmHw = tmpHw
-            RchHw = SummonEditor
-            Me.RichText = myTBox.Value
+        tHw = .[_GethWnd]
+        If fHw <> tHw Then
+            DestroyWindow rHw
+            fHw = tHw
+            rHw = SummonEditor
+            Me.RichText = myTbx.Value
         End If
-        RichHw = RchHw
+        RichHw = rHw
         myFrm.SetFocus
     End With
 End Property
@@ -150,20 +151,19 @@ Public Property Let RichText(newText As Variant)
     If rh = 0 Then Exit Property
     Call SendMessage(rh, WM_SETTEXT, 0, StrPtr(CStr(newText)))
 End Property
-Private Sub myFrm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub myFrm_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     If RichHw = 0 Then Exit Sub
 End Sub
 Private Sub myFrm_Layout()
     With myFrm
         Call MoveWindow(RichHw, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), 1)
     End With
-    Call Highlight
 End Sub
 Private Function SummonEditor() As LongPtr
     With myCtr
-        SummonEditor = CreateWindowEx(0, "RICHEDIT50W", .Tag, MY_RICH_EDIT_STYLE, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), FrmHw, 0, 0, 0)
-        Call SendMessage(SummonEditor, EM_SETCHARFORMAT, 0, VarPtr(cf))
-        Call SendMessage(SummonEditor, EM_SETBKGNDCOLOR, 0, DEFAULT_BACK_COLOR)
+        SummonEditor = CreateWindowEx(0, "RICHEDIT50W", .Tag, MY_RICH_EDIT_STYLE, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), fHw, 0, 0, 0)
+        SendMessage SummonEditor, EM_SETCHARFORMAT, 0, VarPtr(CF2)
+        SendMessage SummonEditor, EM_SETBKGNDCOLOR, 0, MY_BACK_COLOR
     End With
     Call Highlight
 End Function
@@ -194,8 +194,8 @@ Public Property Let height(RHS As Double)
     myFrm.height = RHS
 End Property
 Private Sub myLoadLibs()
-    Set regex = CreateObject("VBScript.RegExp")
-    With regex
+    Set Reg = CreateObject("VBScript.RegExp")
+    With Reg
         .Global = True
         .IgnoreCase = False
         .Multiline = True
@@ -213,25 +213,26 @@ Public Sub Init(ByRef TargetBox As MSForms.TextBox, Optional ByVal CodeType As S
 On Error GoTo InitErr
     Set PtnDic = GetSyntaxDic(CodeType)
     If IsInited = True Then Call ClearControls
-    Set myTBox = TargetBox
-    myTBox.Visible = False
-    Dim pControl As Variant: Set pControl = myTBox.Parent
+    Set myTbx = TargetBox
+    myTbx.Visible = False
+    Dim pControl As Variant: Set pControl = myTbx.Parent
     Set myCtr = pControl.Controls.Add("Forms.Frame.1")
     Set myFrm = myCtr
     With myCtr
-        .Left = myTBox.Left
-        .width = myTBox.width
-        .Top = myTBox.Top
-        .height = myTBox.height
+        .Left = myTbx.Left
+        .width = myTbx.width
+        .Top = myTbx.Top
+        .height = myTbx.height
         .SpecialEffect = fmSpecialEffectFlat
         .BorderStyle = fmBorderStyleSingle
-        .BackColor = DEFAULT_BACK_COLOR
-        FrmHw = .[_GethWnd]
-        RchHw = SummonEditor
+        .BackColor = MY_BACK_COLOR
+        fHw = .[_GethWnd]
+        rHw = SummonEditor
         IsInited = True
         If RichHw = 0 Then err.Raise vbObjectError + 1, , "CreateWindowEx failed"
-        Me.RichText = myTBox.text
+        Me.RichText = myTbx.text
     End With
+    Call Highlight
     Exit Sub
 InitErr:
     Debug.Print "Init error: " & err.Number & " " & err.Description
@@ -240,26 +241,26 @@ InitErr:
 End Sub
 Private Sub ClearControls()
 On Error Resume Next
-    DestroyWindow RchHw: RchHw = 0
-    Set myFrm = Nothing: Set myTBox = Nothing: Set myCtr = Nothing
+    DestroyWindow rHw: rHw = 0
+    Set myFrm = Nothing: Set myTbx = Nothing: Set myCtr = Nothing
 End Sub
 Private Sub Class_Terminate()
 On Error Resume Next
     Call ClearControls
-    Set PtnDic = Nothing: Set regex = Nothing
+    Set PtnDic = Nothing: Set Reg = Nothing
 End Sub
 Private Sub Class_Initialize()
     IsInited = False
-    DEFAULT_FONT_COLOR = RGB(220, 220, 220)
-    DEFAULT_BACK_COLOR = RGB(30, 30, 30)
+    MY_FONT_COLOR = RGB(220, 220, 220)
+    MY_BACK_COLOR = RGB(30, 30, 30)
     Dim bytes() As Byte, i
     bytes = "Cascadia Code"
-    With cf
-        .cbSize = LenB(cf)
+    With CF2
+        .cbSize = LenB(CF2)
         .dwMask = MY_MASK
-        .crTextColor = DEFAULT_FONT_COLOR
+        .crTextColor = MY_FONT_COLOR
         For i = 0 To UBound(bytes)
-            cf.szFaceName(i) = bytes(i)
+            CF2.szFaceName(i) = bytes(i)
         Next i
     End With
     Call myLoadLibs
@@ -270,10 +271,17 @@ Public Property Get GetSyntaxDic(CodeType As String) As Object
     With GetSyntaxDic
         If CodeType Like "js" Then
             .Add """[^""]*""|'[^']*'|`[^`]*`", RGB(214, 157, 133)
-            .Add "\b(function|class|import|from|export|return|if|else|switch|case|break|continue|for|while|do|try|catch|finally|throw|new|this|super|extends|const|let|var|async|await)\b", RGB(86, 156, 214)
-            .Add "\b\d+(\.\d+)?\b", RGB(181, 206, 168)
-            .Add "//.*$", RGB(106, 153, 85)
+            .Add "\$\{[^}]+\}", RGB(220, 220, 170)
+            .Add "\b(const|let|var|function|class|extends|super|new|import|export|from)\b", RGB(86, 156, 214)
+            .Add "\b(if|else|switch|case|break|continue|for|while|do|return|try|catch|finally|throw)\b", RGB(86, 156, 214)
+            .Add "\b(delete|in|instanceof|typeof|void|yield|await)\b", RGB(86, 156, 214)
+            .Add "\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b", RGB(181, 206, 168)
+            .Add "//[^\n]*", RGB(106, 153, 85)
             .Add "/\*[\s\S]*?\*/", RGB(106, 153, 85)
+            .Add "/\/(?!\s)(?:\\.|[^/\\])+\/[gimsuy]*/", RGB(214, 157, 133)
+            .Add "\b[a-zA-Z_]\w*(?=\s*:)\b", RGB(156, 220, 254)
+            .Add "\b(Array|Object|String|Number|Boolean|Promise|Symbol|Map|Set|WeakMap|WeakSet|Date|Math|JSON|RegExp|Error|BigInt)\b", RGB(78, 201, 176)
+            .Add "\b(map|filter|reduce|forEach|push|pop|shift|unshift|includes|startsWith|endsWith|test|exec)\b", RGB(220, 220, 170)
         ElseIf CodeType Like "cs" Then
             .Add """[^""]*""|@""[^""]*""", RGB(214, 157, 133)
             .Add "\b(class|namespace|using|public|private|protected|internal|static|void|int|string|bool|var|new|return|if|else|switch|case|break|continue|for|foreach|while|do|try|catch|finally|throw|this|base|enum|struct|interface|async|await)\b", RGB(86, 156, 214)
@@ -286,10 +294,20 @@ Public Property Get GetSyntaxDic(CodeType As String) As Object
             .Add "\b\d+(\.\d+)?\b", RGB(181, 206, 168)
             .Add "'[^\n]*", RGB(106, 153, 85)
         Else
-            .Add """[^""]*""|'[^']*'", RGB(214, 157, 133)
-            .Add "\b(def|class|import|from|if|elif|else|for|while|return|try|except|with|as|pass|break|continue|lambda|yield)\b", RGB(86, 156, 214)
-            .Add "\b\d+(\.\d+)?\b", RGB(181, 206, 168)
+            .Add "(r|u|f|fr|rf)?(""" & "[\s\S]*?" & """|'''[\s\S]*?'''|""[^""\n]*""|'[^'\n]*')", RGB(214, 157, 133)
+            .Add "\{[^}]+\}", RGB(220, 220, 170)
+            .Add "\b(def|class|lambda|yield|global|nonlocal)\b", RGB(86, 156, 214)
+            .Add "\b(if|elif|else|for|while|break|continue|return|pass)\b", RGB(86, 156, 214)
+            .Add "\b(try|except|finally|raise|assert)\b", RGB(86, 156, 214)
+            .Add "\b(import|from|as)\b", RGB(86, 156, 214)
+            .Add "\b(and|or|not|in|is)\b", RGB(86, 156, 214)
+            .Add "\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\d[\d_]*(\.\d[\d_]*)?([eE][+-]?\d+)?)\b", RGB(181, 206, 168)
             .Add "#.*$", RGB(106, 153, 85)
+            .Add "#\s*(TODO|FIXME|NOTE)\b.*", RGB(255, 200, 130)
+            .Add "@\w+", RGB(197, 134, 192)
+            .Add "\b(print|len|range|open|enumerate|zip|map|filter|sum|min|max|sorted|type|isinstance|dir|vars|help)\b", RGB(78, 201, 176)
+            .Add "\b(int|float|str|list|dict|set|tuple|bool|bytes|object|Exception|ValueError|TypeError|KeyError|IndexError|RuntimeError)\b", RGB(78, 201, 176)
         End If
     End With
 End Function
+

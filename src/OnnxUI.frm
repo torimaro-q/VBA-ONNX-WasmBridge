@@ -16,6 +16,9 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+
+
+
 Option Explicit
 Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As Long)
 Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAccessible As Object, ByRef hwnd As LongPtr) As LongPtr
@@ -32,11 +35,11 @@ Private WithEvents OnnxMain As VbOnnxMain
 Attribute OnnxMain.VB_VarHelpID = -1
 Private WithEvents GLF As GLFrame
 Attribute GLF.VB_VarHelpID = -1
+Private Rch As RichEdit
 Private models As Object, busy As Boolean, slX As Double, slY As Double, pitch As Double, roll As Double, yaw As Double, zm As Double
-Private rch As RichEdit
 Private Sub ApplyRichEdit(ByRef target As MSForms.TextBox)
-    If rch Is Nothing Then Set rch = New RichEdit
-    rch.Init target
+    If Rch Is Nothing Then Set Rch = New RichEdit
+    Rch.Init target
 End Sub
 Private Sub Frame2_Click(): DoEvents: End Sub
 Private Sub GLF_Paint()
@@ -113,7 +116,7 @@ err:
     Repaint
     Call GLF_Paint
 End Sub
-Private Sub Label1_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label1_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     With Label1
         busy = True
         .BackColor = &HFFCCCC
@@ -124,20 +127,20 @@ Private Sub Label1_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, By
         .BackColor = &HFFFFFF
     End With
 End Sub
-Private Sub Label2_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label2_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     ButtonAction Label2, "OpenTempFolder", OnnxMain
 End Sub
-Private Sub Label3_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label3_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     ButtonAction Label3, "OpenEdgeForDownload", OnnxMain
 End Sub
-Private Sub Label4_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label4_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     ButtonAction Label4, "Export", OnnxMain
 End Sub
-Private Sub Label5_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label5_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     LabelLibs.Caption = ""
     ButtonAction Label5, "EnsureRuntimeFiles", OnnxMain
 End Sub
-Private Sub Label6_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Label6_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     ButtonAction Label6, "ShowModelForm", Me
 End Sub
 Private Sub UserForm_Resize()
@@ -196,6 +199,7 @@ End Sub
 Private Sub UserForm_Terminate()
     Set GLF = Nothing
     Set OnnxMain = Nothing
+    Set Rch = Nothing
 End Sub
 Private Sub Resizable()
     WindowFromAccessibleObject Me, hwnd
