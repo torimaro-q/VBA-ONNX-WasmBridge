@@ -2,7 +2,7 @@
 
 ![screenshot](pic/screenshot2.png)
 
-![screenshot](pic/DEMO.gif)
+![screenshot](pic/demo.gif)
 
 This repository provides a demonstration of how to run an ONNX model from Microsoft Excel using VBA and PowerShell.  
 It is intended **for learning and reference purposes only**, not for production use.
