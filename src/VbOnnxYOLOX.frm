@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} VbOnnxYOLOX 
-   Caption         =   "model"
-   ClientHeight    =   11565
+   Caption         =   "YOLOX"
+   ClientHeight    =   11415
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   15915
+   ClientWidth     =   16965
    OleObjectBlob   =   "VbOnnxYOLOX.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -14,31 +14,30 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
-
 Option Explicit
 Implements IVbOnnx
 Private WithEvents myglf As GLFrame, selx As Double, sely As Double
 Attribute myglf.VB_VarHelpID = -1
-Private Property Get IVbOnnx_Editor() As MSForms.IMdcText
+Private Property Get IVbOnnx_Editor() As MSForms.TextBox
     Set IVbOnnx_Editor = Me.TextBox3
 End Property
 Private Sub UserForm_Click(): DoEvents: End Sub
-Private Sub myglf_Click(ByVal X As Double, y As Double, Button As Integer)
+Private Sub myglf_Click(ByVal X As Double, Y As Double, Button As Integer)
     'Write the processing using the result of the hit test (OpenGL) here.
     selx = X
-    sely = y
+    sely = Y
 End Sub
 Private Property Get IVbOnnx_Name() As String
-    IVbOnnx_Name = TextBox1.Value
+    IVbOnnx_Name = Me.Caption
 End Property
 Private Property Get IVbOnnx_Info() As String
-    IVbOnnx_Info = TextBox2.Value
+    IVbOnnx_Info = TextBox1.Value
 End Property
 Private Property Get IVbOnnx_JsCode() As String
     IVbOnnx_JsCode = TextBox3.Value
 End Property
 Private Property Get IVbOnnx_exLibs() As Collection
-    Dim arr As Variant: arr = Split(TextBox4.Value, vbNewLine)
+    Dim arr As Variant: arr = Split(TextBox2.Value, vbNewLine)
     Dim tmp, coll As Collection: Set coll = New Collection
     For Each tmp In arr
         coll.Add Application.Clean(tmp)
@@ -104,7 +103,7 @@ Private Sub IVbOnnx_Render(GLF As GLFrame, Parent As VbOnnxMain)
     End With
 End Sub
 Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optional Left As Double = 0, Optional Top As Double = 0) As ChartObject
-    Dim i As Long, lnColor As Long, asp As Double, tX As Double, tY As Double, w, h, csize
+    Dim i As Long, lnColor As Long, asp As Double, tX As Double, tY As Double, W, h, csize
     asp = Parent.ImageWidth / (Parent.ImageHeight + 0.1)
     csize = 300
     Set IVbOnnx_Export = target.ChartObjects.Add(Left:=Left, Top:=Top, width:=csize * asp, height:=csize)
@@ -140,11 +139,11 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                     With Parent.OnnxResults.Item(i)
                         tX = .Item("x")
                         tY = .Item("y")
-                        w = .Item("w")
+                        W = .Item("w")
                         h = .Item("h")
                         If tX < 0 Then tX = 0
                     End With
-                    .XValues = Array(tX, tX + w, tX + w, tX, tX)
+                    .XValues = Array(tX, tX + W, tX + W, tX, tX)
                     .Values = Array(tY, tY, tY + h, tY + h, tY)
                     With .Points(1)
                         .ApplyDataLabels

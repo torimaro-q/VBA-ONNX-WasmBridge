@@ -18,7 +18,7 @@ Private Const Inv255 As Double = 1 / 255
 Public Event Load()
 Public Event Paint()
 Public Event DblClick()
-Public Event Click(ByVal X As Double, y As Double, Button As Integer)
+Public Event Click(ByVal X As Double, Y As Double, Button As Integer)
 Public Event DragDelta(ByVal DeltaX As Double, DeltaY As Double, Button As Integer)
 Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAcessible As Object, ByRef hwnd As LongPtr) As LongPtr
 Private px As Double, pY As Double, TW2PX As Double
@@ -30,15 +30,15 @@ End Sub
 Private Sub Frame_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     RaiseEvent DblClick
 End Sub
-Private Sub Frame_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Frame_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     px = TW2PX * X
-    pY = TW2PX * y
+    pY = TW2PX * Y
     RaiseEvent Click(px, pY, Button)
 End Sub
-Private Sub Frame_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal y As Single)
+Private Sub Frame_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     If Button = 0 Then Exit Sub
-    RaiseEvent DragDelta(px - TW2PX * X, pY - TW2PX * y, Button)
-    px = TW2PX * X: pY = TW2PX * y
+    RaiseEvent DragDelta(px - TW2PX * X, pY - TW2PX * Y, Button)
+    px = TW2PX * X: pY = TW2PX * Y
 End Sub
 Public Sub Refresh()
     RaiseEvent Paint
@@ -66,7 +66,7 @@ Public Sub Init(ByRef TargetFrame As MSForms.Frame)
     With gl
         .hwnd = hw
         .PaintStart
-        .ClearColor bColor.R, bColor.G, bColor.b, bColor.a
+        .ClearColor bColor.R, bColor.G, bColor.B, bColor.A
         .Enable GL_DEPTH_TEST
     End With
     Set Frame = TargetFrame
@@ -85,7 +85,7 @@ Public Function Rgb2Color4(ByVal sysCL As Long) As Color4
     With Rgb2Color4
         .R = rgbcl.R * Inv255
         .G = rgbcl.G * Inv255
-        .b = rgbcl.b * Inv255
-        .a = 1
+        .B = rgbcl.B * Inv255
+        .A = 1
     End With
 End Function

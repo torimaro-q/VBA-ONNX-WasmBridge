@@ -16,81 +16,95 @@ Private Const ONNX_CSS = "body {margin: 0;height: 100vh;display: flex;justify-co
                          "@keyframes spin {0% {transform: rotate(0deg);}100% { transform: rotate(360deg);}}"
 Private Const DL_INFO1 As String = "The required files is missing." & vbCrLf & "Microsoft Edge will now open the download page." & vbCrLf & vbCrLf & "Please download the file manually and place it in the Temp folder:"
 Private Const DL_INFO2 As String = "Attention : Please use the downloaded files in accordance with the license terms provided by their respective distributors."
+Private Const GL_INFO As String = "Left drag: Move image,Right drag (up/down): Zoom,Both buttons + drag: Rotate image,Double-click: Reset camera"
+Private Const API_URL = "http://localhost:8080/api/"
+Private Const PS_NAME = "server.ps1", JS_NAME = "index.html", SERVER_NAME = "tmp_server", BW = 240, BH = 90
 Public Event FileChecked(CheckedFilePath As String, url As String, Check As Boolean)
 Public Event Executed()
 Public Event Running()
-Public OnnxResults As Collection
-Public ImageWidth As Long, ImageHeight As Long, ImagePath As String
-Public ExecuteFlg As Boolean
-Private Const PS_NAME = "server.ps1", JS_NAME = "index.html", SERVER_NAME = "tmp_server", BOX_W = 240, BOX_H = 90
-Private AngleRate As Double, glMsg(3) As String, busy As Boolean, ibuffer() As Byte
-Private RuntimeFiles As Collection, ExtraFiles As Collection
-Private SelectedOnnx As IVbOnnx, http As Object, sh As Object, CheckedCache As Object
+Public ModelDict As Object, OnnxResults As Collection, ImageWidth As Long, ImageHeight As Long, ImagePath As String, ExecuteFlg As Boolean
+Private AngleRate As Double, glMsg As Variant, busy As Boolean, ibuffer() As Byte
+Private RuntimeFiles As Collection, ExtraFiles As Collection, SelectedOnnx As IVbOnnx, http As Object, sh As Object, CheckedCache As Object, ModelCache As Object
 Public Property Get FILE_FILTER() As String
     FILE_FILTER = "imagefile(*.bmp;*.jpg;*.png),*.bmp;*.jpg;*.png"
 End Property
-Private Function myModels() As IVbOnnx()
-    myModels = ModelArray(New VbOnnxResNet, New VbOnnxYOLOX, New VbOnnxFNST, New VbOnnxMiDaS, New VbOnnxAnimeGAN, New VbOnnxOCR)
-End Function
-Public Function GetModelDict() As Object 'Dict
-    Dim dict, m As Variant: Set dict = CreateObject("Scripting.Dictionary")
-    For Each m In myModels
-        dict.Add m.name, m
+Private Sub GenModelDict()
+    Dim n, m, arr: arr = Array(VbOnnxResNet, VbOnnxYOLOX, VbOnnxFNST, VbOnnxMiDaS, VbOnnxAnimeGAN, VbOnnxOCR)
+    Set ModelDict = CreateObject("Scripting.Dictionary")
+    Set ModelCache = CreateObject("Scripting.Dictionary")
+    For Each m In arr
+        n = TypeName(m)
+        ModelDict.Add Replace(n, "VbOnnx", ""), n
     Next m
-    Set GetModelDict = dict
+End Sub
+Public Function ModelNames() As Variant
+    ModelNames = ModelDict.keys
+End Function
+Public Function GetFormFromName(ByVal name As String) As Object
+    With ModelDict
+        If .exists(name) Then Set GetFormFromName = UserForms.Add(.Item(name))
+    End With
+End Function
+Public Function GetModelFromName(ByVal name As String) As IVbOnnx
+    If ModelDict.exists(name) Then
+        With ModelCache
+            If .exists(name) = False Then .Add name, UserForms.Add(ModelDict.Item(name))
+            Set GetModelFromName = .Item(name)
+        End With
+    End If
 End Function
 Private Function GetPipeLine(ByVal TargetPath As String) As String
     If SelectedOnnx Is Nothing Then Exit Function
-    Dim n As String: n = vbNewLine
     With SelectedOnnx
-        GetPipeLine = "<!doctype html><html>" & n & _
-                     "<head><meta charset='UTF-8'><title>Running : " & .name & "</title><script src='ort.min.js'></script>" & n & _
-                        "<style>" & ONNX_CSS & "</style>" & n & _
-                     "</head>" & n & _
-                        "<body>" & n & _
-                               "<div id='loader'></div><img id='img' src='images/" & GetFileName(TargetPath) & "' style='display:none;' />" & n & _
-                               "<script>" & n & _
-                                   "(async () => {" & .JsCode & "})();" & n & _
-                               "</script>" & n & _
-                        "</body>" & n & _
-                     "</html>"
+        GetPipeLine = "<!doctype html><html><head><meta charset='UTF-8'><title>Running : " & .name & "</title><script src='ort.min.js'></script>" & _
+                           "<style>" & ONNX_CSS & "</style></head>" & _
+                           "<body>" & _
+                                  "<div id='loader'></div><img id='img' src='images/" & GetFileName(TargetPath) & "' style='display:none;' />" & _
+                                  "<script>(async () => {" & .JsCode & "})();</script>" & _
+                           "</body>" & _
+                        "</html>"
     End With
 End Function
-Public Function Execute(ByVal TargetFilePath As String) As Collection
+Public Function Execute(ByVal TargetPath As String) As Collection
     If ExecuteFlg Then
-        If ImagePath <> TargetFilePath Then
-            Call Image2buffer(TargetFilePath)
-            FileCopy TargetFilePath, ImagesPath & "\" & GetFileName(TargetFilePath)
-            ImagePath = TargetFilePath
+        If ImagePath <> TargetPath Then
+            Call Image2buffer(TargetPath)
+            FileCopy TargetPath, ImagesPath & "\" & GetFileName(TargetPath)
+            ImagePath = TargetPath
         End If
-        WriteTextFile JsPath, GetPipeLine(TargetFilePath)
+        WriteTextFile JsPath, GetPipeLine(TargetPath)
         Set OnnxResults = json2coll(CallRest)
         Set Execute = OnnxResults
         RaiseEvent Executed
     End If
 End Function
-Private Sub Image2buffer(ByVal TargetFilePath As String)
+Private Sub Image2buffer(ByVal TargetPath As String)
     Dim imst As ImageStream: Set imst = New ImageStream
     With imst
-        ibuffer = .GetBmpStreamFromFile(TargetFilePath)
+        ibuffer = .GetBmpStreamFromFile(TargetPath)
         ImageWidth = .width
         ImageHeight = .height
     End With
     Set imst = Nothing
 End Sub
 Private Function CallRest() As String
-    Dim result() As Byte
-    Dim rstr
+    Dim result() As Byte, rstr, t
     With http
-        .Open "POST", "http://localhost:8080/api/infer", False
+        .Open "POST", API_URL & "infer", False
         Call Sleep(1000)
         .SetRequestHeader "Content-Type", "application/json; charset=UTF-8"
         .Send
         Call Sleep(1000)
+        t = Timer
         Do
-            Call Sleep(250): DoEvents
+            If Abs(t - Timer) > 60 Then
+                .Open "POST", API_URL & "result", False
+                .SetRequestHeader "Content-Type", "application/json; charset=UTF-8"
+                .Send "{""error"":""timeout""}"
+            End If
+            Call Sleep(1000): DoEvents
             RaiseEvent Running
-            .Open "GET", "http://localhost:8080/api/getresult", False
+            .Open "GET", API_URL & "getresult", False
             .Send
             rstr = .ResponseBody
         Loop While Len(rstr) = 0
@@ -108,16 +122,14 @@ Private Function CallRest() As String
     End With
 End Function
 Private Sub Class_Initialize()
+    Call GenModelDict
     Set CheckedCache = CreateObject("Scripting.Dictionary")
     Call SetRequiredFiles
     AngleRate = 1 / Tan(15 * DEG2RAD)
     If Dir(TempPath, vbDirectory) = "" Then MkDir TempPath
     ExecuteFlg = False
     Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
-    glMsg(0) = "Left drag: Move image"
-    glMsg(1) = "Right drag (up/down): Zoom"
-    glMsg(2) = "Both buttons + drag: Rotate image"
-    glMsg(3) = "Double-click: Reset camera"
+    glMsg = Split(GL_INFO, ",")
     Dim tlib As Variant
     Set RuntimeFiles = New Collection
     With RuntimeFiles
@@ -145,9 +157,6 @@ Private Sub initSever(ByVal ServerCode As String)
         Sleep 1000
     End If
 End Sub
-Public Function COnx(ByRef model As Object) As IVbOnnx
-    Set COnx = model
-End Function
 Private Sub SetRequiredFiles(Optional ByRef exLibs As Collection = Nothing)
     Dim tlib: Set ExtraFiles = New Collection
     With ExtraFiles
@@ -207,7 +216,7 @@ Private Function EnsureFile(ByVal url As String, ByVal localPath As String, Opti
                     With CreateObject("ADODB.Stream")
                         .Type = 1
                         .Open
-                        .Write http.ResponseBody
+                        .Write .ResponseBody
                         .SaveToFile localPath, 2
                         .Close
                     End With
@@ -226,35 +235,34 @@ err:
     EnsureFile = False
 End Function
 Public Sub OpenEdgeForDownload()
-    Dim url, flg As Boolean, cnt As Long
-    cnt = 0
+    Dim url, flg As Boolean, cnt As Long: cnt = 0
     For Each url In ExtraFiles
         flg = EnsureFile(CStr(url), TempPath & "\" & GetFileName(url, "/"), False)
         If flg = False Then
-            If cnt = 0 Then MsgBox DL_INFO1 & vbCrLf & TempPath & vbCrLf & vbCrLf & DL_INFO2, vbInformation, "Download ONNX File"
+            If cnt = 0 Then MsgBox DL_INFO1 & vbCrLf & TempPath & vbCrLf & vbCrLf & DL_INFO2, vbInformation, "Download Files"
             Dim wsh As Object: Set wsh = CreateObject("WScript.Shell")
             wsh.Run "msedge.exe " & url
             cnt = cnt + 1
         End If
     Next url
 End Sub
-Public Sub ExportModelCode(ByVal TargetFilePath As String)
-    If Me.OnnxModel Is Nothing Then Exit Sub
-    WriteTextFile TargetFilePath, OnnxModel.JsCode
+Public Sub ExportModelCode(ByVal TargetPath As String)
+    If OnnxModel Is Nothing Then Exit Sub
+    WriteTextFile TargetPath, OnnxModel.JsCode
 End Sub
 Public Function Export(Optional ByRef target As Worksheet = Nothing, Optional Left As Double = 0, Optional Top As Double = 0) As ChartObject
-    If Me.OnnxResults Is Nothing Then Exit Function
+    If OnnxResults Is Nothing Then Exit Function
     If target Is Nothing Then Set target = ActiveSheet
-    Set Export = Me.OnnxModel.Export(target, Me, Left, Top)
+    Set Export = OnnxModel.Export(target, Me, Left, Top)
 End Function
 Public Sub Render(ByRef target As GLFrame, Zoom As Double, offsetX As Double, offsetY As Double, pitch As Double, roll As Double, yaw As Double)
-    Dim tHeight As Double, tWidth As Double, AspectRatio As Double, Distance As Double, i As Long, yy As Double, bx As Double, by As Double
+    Dim tH As Double, tW As Double, AspR As Double, Dst As Double, i As Long, yy As Double, bx As Double, by As Double, chr() As Byte
     Dim AoV As Double: AoV = 3
     With target
-        tHeight = .height
-        tWidth = .width
-        AspectRatio = tWidth / (tHeight + 0.0001)
-        Distance = (0.5 * tHeight * Zoom) / Tan(AoV * 0.5 * DEG2RAD)
+        tH = .height
+        tW = .width
+        AspR = tW / (tH + 0.0001)
+        Dst = (0.5 * tH * Zoom) / Tan(AoV * 0.5 * DEG2RAD)
         With .gl
             If Not Not ibuffer Then
                 .GenTextures 1, 1
@@ -269,12 +277,12 @@ Public Sub Render(ByRef target As GLFrame, Zoom As Double, offsetX As Double, of
                 .Disable GL_TEXTURE_2D
                 Erase ibuffer
             End If
-            .Viewport 0, 0, tWidth, tHeight
+            .Viewport 0, 0, tW, tH
             .Clear GL_COLOR_BUFFER_BIT Or GL_DEPTH_BUFFER_BIT
             .MatrixMode GL_PROJECTION
                 .LoadIdentity
-                .Perspective AoV, AspectRatio, Distance * 0.5, Distance * 1.5
-                .LookAt -offsetX, -offsetY - 0.001, Distance, -offsetX, -offsetY, 0, 0, 0, 1
+                .Perspective AoV, AspR, Dst * 0.5, Dst * 1.5
+                .LookAt -offsetX, -offsetY - 0.001, Dst, -offsetX, -offsetY, 0, 0, 0, 1
             .MatrixMode GL_MODELVIEW
                 .BindTexture GL_TEXTURE_2D, 1
                 .LoadIdentity
@@ -283,26 +291,32 @@ Public Sub Render(ByRef target As GLFrame, Zoom As Double, offsetX As Double, of
                     .Rotated roll, 0, -1, 0
                     .Rotated yaw, 0, 0, 1
                     .Color4f 1#, 1#, 1#, 1#
-                    If Not OnnxResults Is Nothing Then If OnnxResults.Count > 0 Then Me.OnnxModel.Render target, Me
+                    If Not OnnxResults Is Nothing Then
+                        With OnnxResults
+                            If .Count > 0 Then
+                                If .Item(1).exists("error") = False Then OnnxModel.Render target, Me
+                            End If
+                        End With
+                    End If
                 .PopMatrix
             .MatrixMode GL_PROJECTION
                 .LoadIdentity
-                .Ortho2D 0, tWidth, 0, tHeight
+                .Ortho2D 0, tW, 0, tH
                 .MatrixMode GL_MODELVIEW
                 .LoadIdentity
-                bx = tWidth - BOX_W - 30
+                bx = tW - BW - 30
                 by = 10
                 .Color4f 0, 1, 1, 1
                 .Begin GL_LINE_LOOP
                     .Vertex2d bx, by
-                    .Vertex2d bx + BOX_W, by
-                    .Vertex2d bx + BOX_W, by + BOX_H
-                    .Vertex2d bx, by + BOX_H
+                    .Vertex2d bx + BW, by
+                    .Vertex2d bx + BW, by + BH
+                    .Vertex2d bx, by + BH
                 .End1
-                yy = by + BOX_H - 20
+                yy = by + BH - 20
                 .listbase FONT_BASE_SMALL
-                For i = 0 To 3
-                    Dim chr() As Byte: chr = StrConv(glMsg(i), vbFromUnicode)
+                For i = LBound(glMsg) To UBound(glMsg)
+                    chr = StrConv(CStr(glMsg(i)), vbFromUnicode)
                     .RasterPos2d bx + 10, yy
                     .CallLists UBound(chr) + 1, GL_UNSIGNED_BYTE, VarPtr(chr(0))
                     yy = yy - 18

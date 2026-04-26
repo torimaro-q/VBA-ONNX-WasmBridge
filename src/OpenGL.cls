@@ -25,9 +25,9 @@ Private Declare PtrSafe Function wglMakeCurrent Lib "opengl32.dll" (ByVal hdc As
 Private Declare PtrSafe Function wglDeleteContext Lib "opengl32.dll" (ByVal hdc As LongPtr) As Long
 Private Declare PtrSafe Sub glColor4f Lib "opengl32.dll" (ByVal red As Single, ByVal green As Single, ByVal blue As Single, ByVal alpha As Single)
 Private Declare PtrSafe Sub glColor3d Lib "opengl32.dll" (ByVal red As Double, ByVal green As Double, ByVal blue As Double)
-Private Declare PtrSafe Sub glVertex2d Lib "opengl32.dll" (ByVal a As Double, ByVal b As Double)
-Private Declare PtrSafe Sub glVertex3d Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
-Private Declare PtrSafe Sub glNormal3d Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
+Private Declare PtrSafe Sub glVertex2d Lib "opengl32.dll" (ByVal A As Double, ByVal B As Double)
+Private Declare PtrSafe Sub glVertex3d Lib "opengl32.dll" (ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+Private Declare PtrSafe Sub glNormal3d Lib "opengl32.dll" (ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
 Private Declare PtrSafe Sub glVertex3dv Lib "opengl32.dll" (ByVal dPtr As LongPtr)
 Private Declare PtrSafe Sub glNormal3dv Lib "opengl32.dll" (ByVal dPtr As LongPtr)
 Private Declare PtrSafe Sub glBegin Lib "opengl32.dll" (ByVal GLenum As Long)
@@ -37,7 +37,7 @@ Private Declare PtrSafe Sub glMatrixMode Lib "opengl32.dll" (ByVal GLenum As Lon
 Private Declare PtrSafe Sub glPushMatrix Lib "opengl32.dll" ()
 Private Declare PtrSafe Sub glPopMatrix Lib "opengl32.dll" ()
 Private Declare PtrSafe Sub glLoadIdentity Lib "opengl32.dll" ()
-Private Declare PtrSafe Sub glViewport Lib "opengl32.dll" (ByVal X As Long, ByVal y As Long, ByVal width As Long, ByVal height As Long)
+Private Declare PtrSafe Sub glViewport Lib "opengl32.dll" (ByVal X As Long, ByVal Y As Long, ByVal width As Long, ByVal height As Long)
 Private Declare PtrSafe Sub glEnable Lib "opengl32.dll" (ByVal GLenum As Long)
 Private Declare PtrSafe Sub glDisable Lib "opengl32.dll" (ByVal GLenum As Long)
 Private Declare PtrSafe Sub glPointSize Lib "opengl32.dll" (ByVal size As Single)
@@ -60,11 +60,11 @@ Private Declare PtrSafe Function CreateFontW Lib "gdi32" (ByVal nHeight As Long,
 Private Declare PtrSafe Function wglUseFontBitmaps Lib "opengl32.dll" Alias "wglUseFontBitmapsA" (ByVal hdc As LongPtr, ByVal dfirst As Long, ByVal dcount As Long, ByVal dlistbase As Long) As Long
 Private Declare PtrSafe Function wglUseFontBitmapsW Lib "opengl32.dll" (ByVal hdc As LongPtr, ByVal dfirst As Long, ByVal dcount As Long, ByVal dlistbase As Long) As Long
 
-Private Declare PtrSafe Sub glRasterPos3d Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
-Private Declare PtrSafe Sub glRasterPos2d Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double)
-Private Declare PtrSafe Sub glTranslated Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
-Private Declare PtrSafe Sub glRotated Lib "opengl32.dll" (ByVal angle As Double, ByVal X As Double, ByVal y As Double, ByVal z As Double)
-Private Declare PtrSafe Sub glScaled Lib "opengl32.dll" (ByVal X As Double, ByVal y As Double, ByVal z As Double)
+Private Declare PtrSafe Sub glRasterPos3d Lib "opengl32.dll" (ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+Private Declare PtrSafe Sub glRasterPos2d Lib "opengl32.dll" (ByVal X As Double, ByVal Y As Double)
+Private Declare PtrSafe Sub glTranslated Lib "opengl32.dll" (ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+Private Declare PtrSafe Sub glRotated Lib "opengl32.dll" (ByVal angle As Double, ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+Private Declare PtrSafe Sub glScaled Lib "opengl32.dll" (ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
 
 Private Declare PtrSafe Function glIsList Lib "opengl32.dll" (ByVal index As Long) As Byte
 Private Declare PtrSafe Sub glNewList Lib "opengl32.dll" (ByVal index As Long, ByVal GLenum As Long)
@@ -83,7 +83,7 @@ Private Declare PtrSafe Sub glTexImage2D Lib "opengl32.dll" (ByVal GLenum As Lon
 Private Declare PtrSafe Sub gluBuild2DMipmaps Lib "glu32.dll" (ByVal GLenum1 As Long, ByVal GLenum2 As Long, _
                                                               ByVal width As Long, ByVal height As Long, _
                                                               ByVal GLenum3 As Long, ByVal GLenum4 As Long, ByVal PixelPtr As LongPtr)
-Private Declare PtrSafe Sub glTexCoord2d Lib "opengl32.dll" (ByVal s As Double, ByVal t As Double)
+Private Declare PtrSafe Sub glTexCoord2d Lib "opengl32.dll" (ByVal S As Double, ByVal t As Double)
 
 Private Declare PtrSafe Sub glGenTextures Lib "opengl32.dll" (ByVal n As Long, ByRef textures As Long)
 Private Declare PtrSafe Sub glBindTexture Lib "opengl32.dll" (ByVal target As Long, ByVal texture As Long)
@@ -143,17 +143,17 @@ End Sub
 Public Function IsList(ByVal index As Long) As Boolean
     IsList = glIsList(index)
 End Function
-Public Sub RasterPos3d(ByVal X As Double, ByVal y As Double, ByVal z As Double)
-    Call glRasterPos3d(X, y, z)
+Public Sub RasterPos3d(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+    Call glRasterPos3d(X, Y, Z)
 End Sub
-Public Sub RasterPos2d(ByVal X As Double, ByVal y As Double)
-    Call glRasterPos2d(X, y)
+Public Sub RasterPos2d(ByVal X As Double, ByVal Y As Double)
+    Call glRasterPos2d(X, Y)
 End Sub
-Public Sub Scaled(ByVal X As Double, ByVal y As Double, ByVal z As Double)
-    Call glScaled(X, y, z)
+Public Sub Scaled(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+    Call glScaled(X, Y, Z)
 End Sub
-Public Sub Translated(ByVal X As Double, ByVal y As Double, ByVal z As Double)
-    Call glTranslated(X, y, z)
+Public Sub Translated(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+    Call glTranslated(X, Y, Z)
 End Sub
 Public Sub PointSize(ByVal size As Single)
     Call glPointSize(size)
@@ -213,8 +213,8 @@ End Sub
 Public Sub SwapBuffers()
     Call SwapBuffersA(hdc)
 End Sub
-Public Sub Viewport(ByVal X As Long, ByVal y As Long, ByVal width As Long, ByVal height As Long)
-    Call glViewport(X, y, width, height)
+Public Sub Viewport(ByVal X As Long, ByVal Y As Long, ByVal width As Long, ByVal height As Long)
+    Call glViewport(X, Y, width, height)
 End Sub
 Public Sub Enable(ByVal Gle As GLenum)
     Call glEnable(Gle)
@@ -249,14 +249,14 @@ End Sub
 Public Sub Color3d(ByVal red As Double, ByVal green As Double, ByVal blue As Double)
     Call glColor3d(red, green, blue)
 End Sub
-Public Sub Vertex2d(ByVal a As Double, ByVal b As Double)
-    Call glVertex2d(a, b)
+Public Sub Vertex2d(ByVal A As Double, ByVal B As Double)
+    Call glVertex2d(A, B)
 End Sub
-Public Sub Vertex3d(ByVal X As Double, ByVal y As Double, ByVal z As Double)
-    Call glVertex3d(X, y, z)
+Public Sub Vertex3d(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+    Call glVertex3d(X, Y, Z)
 End Sub
-Public Sub Normal3d(ByVal X As Double, ByVal y As Double, ByVal z As Double)
-    Call glNormal3d(X, y, z)
+Public Sub Normal3d(ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+    Call glNormal3d(X, Y, Z)
 End Sub
 Public Sub Vertex3dv(ByVal Vec4Ptr As LongPtr)
     Call glVertex3dv(Vec4Ptr)
@@ -264,8 +264,8 @@ End Sub
 Public Sub Normal3dv(ByVal Vec3Ptr As LongPtr)
     Call glNormal3dv(Vec3Ptr)
 End Sub
-Public Sub Rotated(ByVal angle As Double, ByVal X As Double, ByVal y As Double, ByVal z As Double)
-    Call glRotated(angle, X, y, z)
+Public Sub Rotated(ByVal angle As Double, ByVal X As Double, ByVal Y As Double, ByVal Z As Double)
+    Call glRotated(angle, X, Y, Z)
 End Sub
 Public Sub BlendFunc(ByVal GLe1 As GLenum, ByVal GLe2 As GLenum)
     Call glBlendFunc(GLe1, GLe2)
@@ -306,8 +306,8 @@ End Sub
 Public Sub TexCoordPointer(ByVal size As Long, ByVal Gle As GLenum, ByVal Stride As Long, ByVal ptr As LongPtr)
     Call glTexCoordPointer(size, Gle, Stride, ptr)
 End Sub
-Public Sub TexCoord2d(ByVal s As Double, ByVal t As Double)
-    Call glTexCoord2d(s, t)
+Public Sub TexCoord2d(ByVal S As Double, ByVal t As Double)
+    Call glTexCoord2d(S, t)
 End Sub
 '//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Public Property Let hwnd(newPtr As LongPtr)

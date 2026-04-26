@@ -32,15 +32,15 @@ Public Property Get height() As Long
 End Property
 Public Function GetBmpStreamFromFile(ByVal FileName As String) As Byte()
     Dim scan0 As LongPtr, lngToken As LongPtr, pSrcBmp As LongPtr
-    Dim buffer() As Byte, IRect As Rect, w As Long, h As Long
+    Dim buffer() As Byte, IRect As Rect, W As Long, h As Long
     udtInput.GdiplusVersion = 1
     If GdiplusStartup(lngToken, udtInput, ByVal 0&) <> 0 Then End
     If GdipCreateBitmapFromFile(ByVal StrPtr(FileName), pSrcBmp) <> 0 Then GoTo err
-    GdipGetImageWidth pSrcBmp, w
+    GdipGetImageWidth pSrcBmp, W
     GdipGetImageHeight pSrcBmp, h
-    IRect.Right = w
+    IRect.Right = W
     IRect.Bottom = h
-    bsize = w * h * 4 - 1
+    bsize = W * h * 4 - 1
     ReDim buffer(bsize) As Byte
     GdipBitmapLockBits pSrcBmp, IRect, &H3, PixelFormat32bppARGB, bmpdata
     scan0 = bmpdata.scan0

@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} VbOnnxResNet 
-   Caption         =   "model"
-   ClientHeight    =   11565
+   Caption         =   "ResNet"
+   ClientHeight    =   11415
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   15915
+   ClientWidth     =   16965
    OleObjectBlob   =   "VbOnnxResNet.frx":0000
    StartUpPosition =   1  'オーナー フォームの中央
 End
@@ -14,24 +14,23 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
-
 Option Explicit
 Implements IVbOnnx
-Private Property Get IVbOnnx_Editor() As MSForms.IMdcText
+Private Property Get IVbOnnx_Editor() As MSForms.TextBox
     Set IVbOnnx_Editor = Me.TextBox3
 End Property
 Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
-    IVbOnnx_Name = TextBox1.Value
+    IVbOnnx_Name = Me.Caption
 End Property
 Private Property Get IVbOnnx_Info() As String
-    IVbOnnx_Info = TextBox2.Value
+    IVbOnnx_Info = TextBox1.Value
 End Property
 Private Property Get IVbOnnx_JsCode() As String
     IVbOnnx_JsCode = TextBox3.Value
 End Property
 Private Property Get IVbOnnx_exLibs() As Collection
-    Dim arr As Variant: arr = Split(TextBox4.Value, vbNewLine)
+    Dim arr As Variant: arr = Split(TextBox2.Value, vbNewLine)
     Dim tmp, coll As Collection: Set coll = New Collection
     For Each tmp In arr
         coll.Add Application.Clean(tmp)

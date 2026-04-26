@@ -10,13 +10,13 @@ Attribute VB_Exposed = False
 Option Explicit
 Public Property Get name() As String
 End Property
-Public Property Get Info() As String
+Public Property Get INFO() As String
 End Property
 Public Property Get JsCode() As String
 End Property
 Public Property Get exLibs() As Collection
 End Property
-Public Property Get Editor() As MSForms.TextBox
+Public Property Get editor() As MSForms.TextBox
 End Property
 Public Sub Render(ByRef GLF As GLFrame, Parent As VbOnnxMain)
 End Sub

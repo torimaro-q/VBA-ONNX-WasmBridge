@@ -15,8 +15,8 @@ End Type
 Public Type RGBA
     R As Byte
     G As Byte
-    b As Byte
-    a As Byte
+    B As Byte
+    A As Byte
 End Type
 Public Type BITMAPINFO
     bmiHeader As BITMAPINFOHEADER
@@ -88,13 +88,13 @@ Public Const DEG2RAD As Double = 0.017453293
 Public Function json2coll(ByVal json As String) As Collection
     Dim buf As Variant: buf = Split(Replace(Replace(json, "]", ""), "[", ""), "{")
     Dim coll As Collection: Set coll = New Collection
-    Dim b As Variant
-    For Each b In buf
-        If Len(b) > 1 Then
+    Dim B As Variant
+    For Each B In buf
+        If Len(B) > 1 Then
             Dim elms, e, k, v, spl
             Dim dic As Object: Set dic = CreateObject("Scripting.Dictionary")
             With dic
-                elms = Split(Replace(b, "}", ""), ",""")
+                elms = Split(Replace(B, "}", ""), ",""")
                 For Each e In elms
                     If Len(e) > 1 Then
                         spl = Split(e, ":")
@@ -114,7 +114,7 @@ Public Function json2coll(ByVal json As String) As Collection
             End With
             coll.Add dic
         End If
-    Next b
+    Next B
     Set json2coll = coll
 End Function
 Public Function GetFileName(ByVal filepath As String, Optional dlm As String = "\") As String
@@ -127,14 +127,9 @@ Public Sub WriteTextFile(ByVal filepath As String, ByVal fileText As String)
         Print #fileNum, fileText
     Close #fileNum
 End Sub
-Public Function ModelArray(ParamArray models() As Variant) As IVbOnnx()
-    Dim m() As IVbOnnx, midx As Long, i As Long
-    ReDim m(100) As IVbOnnx
-    On Error GoTo err
-    For i = LBound(models) To UBound(models)
-        Set m(midx) = models(i): midx = midx + 1
-    Next i
-    If midx > 0 Then ReDim Preserve m(midx - 1) As IVbOnnx
-    ModelArray = m
+Public Function COnx(ByRef model As Variant) As IVbOnnx
+On Error GoTo err
+    Dim obj As Object: Set obj = model
+    Set COnx = obj
 err:
 End Function

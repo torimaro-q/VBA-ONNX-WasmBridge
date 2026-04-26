@@ -36,11 +36,11 @@ Sub Sample3()
     With oxm
         .EnsureRuntimeFiles
         fpath = Application.GetOpenFilename(.FILE_FILTER)
-        Dim dict As Object: Set dict = .GetModelDict
+        Dim names As Variant: names = .ModelNames
         Dim k, i
-        For Each k In dict.keys()
+        For Each k In names
             i = i + 1
-            Set .OnnxModel = dict.Item(k)
+            Set .OnnxModel = .GetModelFromName(CStr(k))
             .Execute fpath
             With .Export(ActiveSheet)
                 .Left = tX
@@ -53,6 +53,7 @@ Sub Sample3()
                     tY = tY + .height + 5
                 End If
             End With
+            DoEvents
         Next k
     End With
 err:

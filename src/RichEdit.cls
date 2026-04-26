@@ -66,6 +66,8 @@ Private Type CHARFORMAT2
     bRevAuthor As Byte
     bUnderlineColor As Byte
 End Type
+Public Event Layout()
+Public Event Change()
 Private Const MY_RICH_EDIT_STYLE As Long = WS_CHILD Or WS_VISIBLE Or ES_MULTILINE Or ES_AUTOVSCROLL Or ES_AUTOHSCROLL Or WS_VSCROLL Or ES_DISABLENOSCROLL
 Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR
 Private MY_FONT_COLOR  As Long, MY_BACK_COLOR As Long, TW2PX As Double
@@ -98,10 +100,10 @@ Private Sub myFrm_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As
 End Sub
 Private Sub Highlight()
     Dim txt As String: txt = Me.RichText
-    Dim m As Object, s As Long, e As Long, pkey As Variant, cl As Long, scrollPos As POINTAPI
+    Dim m As Object, S As Long, e As Long, pkey As Variant, cl As Long, scrollPos As POINTAPI
     Dim rh As LongPtr: rh = RichHw
     SendMessage rh, WM_SETREDRAW, 0, 0
-    SendMessage rh, EM_GETSEL, VarPtr(s), VarPtr(e)
+    SendMessage rh, EM_GETSEL, VarPtr(S), VarPtr(e)
     SendMessage rh, EM_GETSCROLLPOS, 0, VarPtr(scrollPos)
     SetColor 0, Len(txt), MY_FONT_COLOR
     With Reg
@@ -116,7 +118,7 @@ Private Sub Highlight()
         Next pkey
     End With
     SendMessage rh, EM_SETSCROLLPOS, 0, VarPtr(scrollPos)
-    SendMessage rh, EM_SETSEL, s, e
+    SendMessage rh, EM_SETSEL, S, e
     SendMessage rh, WM_SETREDRAW, 1, 0
     RedrawWindow rh, 0, 0, RDW_INVALIDATE Or RDW_UPDATENOW
 End Sub
@@ -158,6 +160,10 @@ Private Sub myFrm_Layout()
     With myFrm
         Call MoveWindow(RichHw, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), 1)
     End With
+    RaiseEvent Layout
+End Sub
+Private Sub myTbx_Change()
+    RaiseEvent Change
 End Sub
 Private Function SummonEditor() As LongPtr
     With myCtr
@@ -209,13 +215,13 @@ Private Function GetDPI() As Long
     GetDPI = GetDeviceCaps(hdc, LOGPIXELSX)
     Call ReleaseDC(0, hdc)
 End Function
-Public Sub Init(ByRef TargetBox As MSForms.TextBox, Optional ByVal CodeType As String = "js")
-On Error GoTo InitErr
+Public Function Init(ByRef TargetBox As MSForms.TextBox, Optional ByVal CodeType As String = "js")
     Set PtnDic = GetSyntaxDic(CodeType)
     If IsInited = True Then Call ClearControls
     Set myTbx = TargetBox
     myTbx.Visible = False
     Dim pControl As Variant: Set pControl = myTbx.Parent
+On Error GoTo InitErr
     Set myCtr = pControl.Controls.Add("Forms.Frame.1")
     Set myFrm = myCtr
     With myCtr
@@ -233,12 +239,12 @@ On Error GoTo InitErr
         Me.RichText = myTbx.text
     End With
     Call Highlight
-    Exit Sub
+    Exit Function
 InitErr:
     Debug.Print "Init error: " & err.Number & " " & err.Description
     On Error Resume Next
     err.Raise err.Number, err.source, err.Description
-End Sub
+End Function
 Private Sub ClearControls()
 On Error Resume Next
     DestroyWindow rHw: rHw = 0
@@ -272,7 +278,7 @@ Public Property Get GetSyntaxDic(CodeType As String) As Object
         If CodeType Like "js" Then
             .Add """[^""]*""|'[^']*'|`[^`]*`", RGB(214, 157, 133)
             .Add "\$\{[^}]+\}", RGB(220, 220, 170)
-            .Add "\b(const|let|var|function|class|extends|super|new|import|export|from)\b", RGB(86, 156, 214)
+            .Add "\b(const|let|var|async|function|class|extends|super|new|import|export|from)\b", RGB(86, 156, 214)
             .Add "\b(if|else|switch|case|break|continue|for|while|do|return|try|catch|finally|throw)\b", RGB(86, 156, 214)
             .Add "\b(delete|in|instanceof|typeof|void|yield|await)\b", RGB(86, 156, 214)
             .Add "\b(0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\d+(\.\d+)?([eE][+-]?\d+)?)\b", RGB(181, 206, 168)
