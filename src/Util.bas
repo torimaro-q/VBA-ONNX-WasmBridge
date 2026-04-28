@@ -77,6 +77,7 @@ End Type
 Public Type Styp
     v As Single
 End Type
+Public Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As Long)
 Public Const ENCODER_BMP    As String = "{557CF400-1A04-11D3-9A73-0000F81EF32E}"
 Public Const ENCODER_JPG    As String = "{557CF401-1A04-11D3-9A73-0000F81EF32E}"
 Public Const ENCODER_PNG    As String = "{557CF406-1A04-11D3-9A73-0000F81EF32E}"
@@ -85,6 +86,10 @@ Public Const CLMASK As Long = &H80000000
 Public Const LOGPIXELSX As Long = 88
 Public Const WS_EX_DLGMODALFRAME = &H1&
 Public Const DEG2RAD As Double = 0.017453293
+Public Const Inv255 As Double = 1 / 255
+Public Function ModelNames() As Variant
+    ModelNames = Array("VbOnnxResNet", "VbOnnxYOLOX", "VbOnnxFNST", "VbOnnxMiDaS", "VbOnnxAnimeGAN", "VbOnnxOCR", "VbOnnxUF_FER")
+End Function
 Public Function json2coll(ByVal json As String) As Collection
     Dim buf As Variant: buf = Split(Replace(Replace(json, "]", ""), "[", ""), "{")
     Dim coll As Collection: Set coll = New Collection

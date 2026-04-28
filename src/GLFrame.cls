@@ -14,14 +14,13 @@ Private Declare PtrSafe Function GetSysColor Lib "user32" (ByVal nIndex As Long)
 Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
 Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
 Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
-Private Const Inv255 As Double = 1 / 255
 Public Event Load()
 Public Event Paint()
 Public Event DblClick()
 Public Event Click(ByVal X As Double, Y As Double, Button As Integer)
 Public Event DragDelta(ByVal DeltaX As Double, DeltaY As Double, Button As Integer)
 Private Declare PtrSafe Function WindowFromAccessibleObject Lib "oleacc.dll" (ByVal IAcessible As Object, ByRef hwnd As LongPtr) As LongPtr
-Private px As Double, pY As Double, TW2PX As Double
+Private pX As Double, pY As Double, TW2PX As Double
 Public gl As OpenGL
 Private Sub Class_Terminate()
     gl.PaintEnd
@@ -31,14 +30,14 @@ Private Sub Frame_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     RaiseEvent DblClick
 End Sub
 Private Sub Frame_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
-    px = TW2PX * X
+    pX = TW2PX * X
     pY = TW2PX * Y
-    RaiseEvent Click(px, pY, Button)
+    RaiseEvent Click(pX, pY, Button)
 End Sub
 Private Sub Frame_MouseMove(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     If Button = 0 Then Exit Sub
-    RaiseEvent DragDelta(px - TW2PX * X, pY - TW2PX * Y, Button)
-    px = TW2PX * X: pY = TW2PX * Y
+    RaiseEvent DragDelta(pX - TW2PX * X, pY - TW2PX * Y, Button)
+    pX = TW2PX * X: pY = TW2PX * Y
 End Sub
 Public Sub Refresh()
     RaiseEvent Paint

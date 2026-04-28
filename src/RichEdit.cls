@@ -69,10 +69,9 @@ End Type
 Public Event Layout()
 Public Event Change()
 Private Const MY_RICH_EDIT_STYLE As Long = WS_CHILD Or WS_VISIBLE Or ES_MULTILINE Or ES_AUTOVSCROLL Or ES_AUTOHSCROLL Or WS_VSCROLL Or ES_DISABLENOSCROLL
-Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR
-Private MY_FONT_COLOR  As Long, MY_BACK_COLOR As Long, TW2PX As Double
-Private Const PAD As Long = 2
+Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR, PAD As Long = 2
 Public PtnDic As Object
+Private MY_FONT_COLOR  As Long, MY_BACK_COLOR As Long, TW2PX As Double
 Private IsInited As Boolean, Reg As Object, LibPtr As LongPtr, CF2 As CHARFORMAT2
 Private rHw As LongPtr, fHw As LongPtr, tHw As LongPtr, buf As String, pre As String
 Private Sub SetColor(ByRef startPos As Long, ByRef length As Long, ByRef color As Long)

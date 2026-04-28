@@ -187,10 +187,10 @@ Private Sub UserForm_Activate()
     If GLF Is Nothing Then
         Call Resizable(Me)
         DrawBuffer = 320000
-        Sleep 1000
         Dim key As Variant
+        Sleep 500
         With TabStrip1
-            For Each key In OnnxMain.ModelNames
+            For Each key In OnnxMain.ModelDict.keys()
                 .Tabs.Add key
             Next key
             .BackColor = BASE_CL
@@ -203,6 +203,7 @@ Private Sub UserForm_Activate()
             Label5.Picture = .GetImageMso("RefreshAll", ICO_SZ, ICO_SZ)
             Label6.Picture = .GetImageMso("Info", ICO_SZ, ICO_SZ)
         End With
+        Sleep 500
         DoEvents
         Set GLF = New GLFrame
         GLF.Init Frame1
@@ -213,6 +214,7 @@ Private Sub UserForm_Activate()
 End Sub
 Private Sub UserForm_Initialize()
     Set OnnxMain = New VbOnnxMain
+    Sleep 1000
 End Sub
 Private Sub UserForm_Terminate()
     Set GLF = Nothing

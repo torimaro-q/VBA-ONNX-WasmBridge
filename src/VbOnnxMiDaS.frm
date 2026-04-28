@@ -22,7 +22,6 @@ Private texs() As Vector2d
 Private Property Get IVbOnnx_Editor() As MSForms.TextBox
     Set IVbOnnx_Editor = Me.TextBox3
 End Property
-
 Private Sub UserForm_Click(): DoEvents: End Sub
 Private Property Get IVbOnnx_Name() As String
     IVbOnnx_Name = Me.Caption
@@ -49,7 +48,7 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
     name = "Scatter" & format(Now(), "yyyymmdd-hhmmss")
     Dim csize
     csize = 300
-    Set IVbOnnx_Export = target.ChartObjects.Add(Left:=Left, Top:=Top, width:=csize * 1.2, height:=csize)
+    Set IVbOnnx_Export = target.ChartObjects.Add(Left:=Left, Top:=Top, width:=csize * asp, height:=csize)
     With IVbOnnx_Export
         .name = name
         With .Chart

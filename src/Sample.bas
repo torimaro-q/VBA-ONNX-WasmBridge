@@ -36,8 +36,8 @@ Sub Sample3()
     With oxm
         .EnsureRuntimeFiles
         fpath = Application.GetOpenFilename(.FILE_FILTER)
-        Dim names As Variant: names = .ModelNames
-        Dim k, i
+        Dim names As Variant: names = .ModelDict.keys()
+        Dim k, i, j
         For Each k In names
             i = i + 1
             Set .OnnxModel = .GetModelFromName(CStr(k))
@@ -48,12 +48,16 @@ Sub Sample3()
                 .width = .width * 0.8
                 .height = .height * 0.8
                 tX = tX + .width + 5
-                If i Mod 3 = 0 Then
+                If i Mod 4 = 0 Then
                     tX = 100
                     tY = tY + .height + 5
                 End If
             End With
-            DoEvents
+            For j = 1 To 10
+                DoEvents
+                Sleep 100
+                DoEvents
+            Next j
         Next k
     End With
 err:

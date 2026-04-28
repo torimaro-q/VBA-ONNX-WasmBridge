@@ -19,27 +19,25 @@ Private Const DL_INFO2 As String = "Attention : Please use the downloaded files 
 Private Const GL_INFO As String = "Left drag: Move image,Right drag (up/down): Zoom,Both buttons + drag: Rotate image,Double-click: Reset camera"
 Private Const API_URL = "http://localhost:8080/api/"
 Private Const PS_NAME = "server.ps1", JS_NAME = "index.html", SERVER_NAME = "tmp_server", BW = 240, BH = 90
-Public Event FileChecked(CheckedFilePath As String, url As String, Check As Boolean)
+Public Event FileChecked(CheckedPath As String, url As String, Check As Boolean)
 Public Event Executed()
 Public Event Running()
 Public ModelDict As Object, OnnxResults As Collection, ImageWidth As Long, ImageHeight As Long, ImagePath As String, ExecuteFlg As Boolean
-Private AngleRate As Double, glMsg As Variant, busy As Boolean, ibuffer() As Byte
-Private RuntimeFiles As Collection, ExtraFiles As Collection, SelectedOnnx As IVbOnnx, http As Object, sh As Object, CheckedCache As Object, ModelCache As Object
+Private glMsg As Variant, busy As Boolean, ibuffer() As Byte
+Private rtFiles As Collection, exFiles As Collection, sOnnx As IVbOnnx, http As Object, sh As Object, LCache As Object, MCache As Object
 Public Property Get FILE_FILTER() As String
     FILE_FILTER = "imagefile(*.bmp;*.jpg;*.png),*.bmp;*.jpg;*.png"
 End Property
 Private Sub GenModelDict()
-    Dim n, m, arr: arr = Array(VbOnnxResNet, VbOnnxYOLOX, VbOnnxFNST, VbOnnxMiDaS, VbOnnxAnimeGAN, VbOnnxOCR)
+On Error GoTo err:
+    Dim n, arr: arr = ModelNames
     Set ModelDict = CreateObject("Scripting.Dictionary")
-    Set ModelCache = CreateObject("Scripting.Dictionary")
-    For Each m In arr
-        n = TypeName(m)
+    Set MCache = CreateObject("Scripting.Dictionary")
+    For Each n In arr
         ModelDict.Add Replace(n, "VbOnnx", ""), n
-    Next m
+    Next n
+err:
 End Sub
-Public Function ModelNames() As Variant
-    ModelNames = ModelDict.keys
-End Function
 Public Function GetFormFromName(ByVal name As String) As Object
     With ModelDict
         If .exists(name) Then Set GetFormFromName = UserForms.Add(.Item(name))
@@ -47,41 +45,41 @@ Public Function GetFormFromName(ByVal name As String) As Object
 End Function
 Public Function GetModelFromName(ByVal name As String) As IVbOnnx
     If ModelDict.exists(name) Then
-        With ModelCache
+        With MCache
             If .exists(name) = False Then .Add name, UserForms.Add(ModelDict.Item(name))
             Set GetModelFromName = .Item(name)
         End With
     End If
 End Function
-Private Function GetPipeLine(ByVal TargetPath As String) As String
-    If SelectedOnnx Is Nothing Then Exit Function
-    With SelectedOnnx
+Private Function GetPipeLine(ByVal tPath As String) As String
+    If sOnnx Is Nothing Then Exit Function
+    With sOnnx
         GetPipeLine = "<!doctype html><html><head><meta charset='UTF-8'><title>Running : " & .name & "</title><script src='ort.min.js'></script>" & _
                            "<style>" & ONNX_CSS & "</style></head>" & _
                            "<body>" & _
-                                  "<div id='loader'></div><img id='img' src='images/" & GetFileName(TargetPath) & "' style='display:none;' />" & _
+                                  "<div id='loader'></div><img id='img' src='images/" & GetFileName(tPath) & "' style='display:none;' />" & _
                                   "<script>(async () => {" & .JsCode & "})();</script>" & _
                            "</body>" & _
                         "</html>"
     End With
 End Function
-Public Function Execute(ByVal TargetPath As String) As Collection
+Public Function Execute(ByVal tPath As String) As Collection
     If ExecuteFlg Then
-        If ImagePath <> TargetPath Then
-            Call Image2buffer(TargetPath)
-            FileCopy TargetPath, ImagesPath & "\" & GetFileName(TargetPath)
-            ImagePath = TargetPath
+        If ImagePath <> tPath Then
+            Call Image2buffer(tPath)
+            FileCopy tPath, ImagesPath & "\" & GetFileName(tPath)
+            ImagePath = tPath
         End If
-        WriteTextFile JsPath, GetPipeLine(TargetPath)
+        WriteTextFile JsPath, GetPipeLine(tPath)
         Set OnnxResults = json2coll(CallRest)
         Set Execute = OnnxResults
         RaiseEvent Executed
     End If
 End Function
-Private Sub Image2buffer(ByVal TargetPath As String)
+Private Sub Image2buffer(ByVal tPath As String)
     Dim imst As ImageStream: Set imst = New ImageStream
     With imst
-        ibuffer = .GetBmpStreamFromFile(TargetPath)
+        ibuffer = .GetBmpStreamFromFile(tPath)
         ImageWidth = .width
         ImageHeight = .height
     End With
@@ -123,16 +121,15 @@ Private Function CallRest() As String
 End Function
 Private Sub Class_Initialize()
     Call GenModelDict
-    Set CheckedCache = CreateObject("Scripting.Dictionary")
+    Set LCache = CreateObject("Scripting.Dictionary")
     Call SetRequiredFiles
-    AngleRate = 1 / Tan(15 * DEG2RAD)
     If Dir(TempPath, vbDirectory) = "" Then MkDir TempPath
     ExecuteFlg = False
     Set http = CreateObject("WinHttp.WinHttpRequest.5.1")
     glMsg = Split(GL_INFO, ",")
     Dim tlib As Variant
-    Set RuntimeFiles = New Collection
-    With RuntimeFiles
+    Set rtFiles = New Collection
+    With rtFiles
         For Each tlib In Split(ORT_NAMES, ",")
             .Add ONNX_LIB & tlib
         Next tlib
@@ -154,12 +151,11 @@ Private Sub initSever(ByVal ServerCode As String)
     If sh Is Nothing Then
         Sleep 1000
         Set sh = CreateObject("WScript.Shell").Exec("powershell -NoLogo -ExecutionPolicy Bypass -File " & PsPath)
-        Sleep 1000
     End If
 End Sub
 Private Sub SetRequiredFiles(Optional ByRef exLibs As Collection = Nothing)
-    Dim tlib: Set ExtraFiles = New Collection
-    With ExtraFiles
+    Dim tlib: Set exFiles = New Collection
+    With exFiles
         If Not (exLibs Is Nothing) Then
             For Each tlib In exLibs
                 .Add tlib
@@ -171,11 +167,11 @@ Public Sub OpenTempFolder()
     CreateObject("WScript.Shell").Run TempPath
 End Sub
 Public Property Get OnnxModel() As IVbOnnx
-    Set OnnxModel = SelectedOnnx
+    Set OnnxModel = sOnnx
 End Property
 Public Property Set OnnxModel(ByRef tOnnx As IVbOnnx)
-    Set SelectedOnnx = tOnnx
-    SetRequiredFiles SelectedOnnx.exLibs
+    Set sOnnx = tOnnx
+    SetRequiredFiles sOnnx.exLibs
     ExecuteFlg = EnsureRuntimeFiles
 End Property
 Private Property Get PsPath() As String
@@ -194,17 +190,17 @@ err:
 End Property
 Public Function EnsureRuntimeFiles() As Boolean
     Dim url As Variant, flg As Boolean: flg = True
-    For Each url In RuntimeFiles
+    For Each url In rtFiles
         flg = flg * EnsureFile(CStr(url), TempPath & "\" & GetFileName(url, "/"), True)
     Next url
-    For Each url In ExtraFiles
+    For Each url In exFiles
         flg = flg * EnsureFile(CStr(url), TempPath & "\" & GetFileName(url, "/"), False)
     Next url
     ExecuteFlg = flg
     EnsureRuntimeFiles = flg
 End Function
 Private Function EnsureFile(ByVal url As String, ByVal localPath As String, Optional AutoDownload = True) As Boolean
-    If CheckedCache.exists(url) = False Then
+    If LCache.exists(url) = False Then
         If Dir(localPath) = "" Then
             DoEvents
             On Error GoTo err
@@ -223,10 +219,10 @@ Private Function EnsureFile(ByVal url As String, ByVal localPath As String, Opti
                 End If
             End With
         End If
-        Call CheckedCache.Add(url, GetFileName(localPath))
+        Call LCache.Add(url, GetFileName(localPath))
         RaiseEvent FileChecked(GetFileName(localPath), url, True)
     Else
-        RaiseEvent FileChecked(CheckedCache.Item(url), url, True)
+        RaiseEvent FileChecked(LCache.Item(url), url, True)
     End If
     EnsureFile = True
     Exit Function
@@ -236,7 +232,7 @@ err:
 End Function
 Public Sub OpenEdgeForDownload()
     Dim url, flg As Boolean, cnt As Long: cnt = 0
-    For Each url In ExtraFiles
+    For Each url In exFiles
         flg = EnsureFile(CStr(url), TempPath & "\" & GetFileName(url, "/"), False)
         If flg = False Then
             If cnt = 0 Then MsgBox DL_INFO1 & vbCrLf & TempPath & vbCrLf & vbCrLf & DL_INFO2, vbInformation, "Download Files"
@@ -246,9 +242,9 @@ Public Sub OpenEdgeForDownload()
         End If
     Next url
 End Sub
-Public Sub ExportModelCode(ByVal TargetPath As String)
+Public Sub ExportModelCode(ByVal tPath As String)
     If OnnxModel Is Nothing Then Exit Sub
-    WriteTextFile TargetPath, OnnxModel.JsCode
+    WriteTextFile tPath, OnnxModel.JsCode
 End Sub
 Public Function Export(Optional ByRef target As Worksheet = Nothing, Optional Left As Double = 0, Optional Top As Double = 0) As ChartObject
     If OnnxResults Is Nothing Then Exit Function
