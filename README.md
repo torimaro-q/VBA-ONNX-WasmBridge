@@ -29,6 +29,8 @@ It is intended **for learning and reference purposes only**, not for production 
 - Fast Neural Style Transfer
 - Anime GAN v2
 - OnnxOCR
+- Ultra-Light-Fast-Generic-Face-Detector
+- emotion-fer-plus
 
 ## Advantages / 利点
 
