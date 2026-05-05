@@ -143,10 +143,10 @@ Private Sub UserForm_Resize()
     On Error GoTo err
         With Frame1
             .width = width
-            .height = height - 281
+            .height = height - 241
         End With
         With Frame2
-            .Top = height - 183
+            .Top = height - 143
             .width = width - 15.25
         End With
         Frame3.Left = width - 263.25

@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal ms As Long)
-Private Const ORT_NAMES = "ort.min.js,ort-wasm-threaded.wasm,ort-wasm.jsep.wasm,ort-wasm-simd-threaded.jsep.mjs,ort-wasm-simd-threaded.jsep.wasm,ort-wasm-simd-threaded.jsep.worker.js,ort-wasm-simd.jsep.wasm"
+Private Const ORT_NAMES = "ort.min.js,ort-wasm-simd-threaded.jsep.mjs,ort-wasm-simd-threaded.jsep.wasm"
 Private Const ONNX_LIB = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/"
 Private Const ONNX_CSS = "body {margin: 0;height: 100vh;display: flex;justify-content: center;align-items: center;background: #f9f9f9;font-family: sans-serif;}" & _
                          "#loader {border: 8px solid #f3f3f3;border-top: 8px solid #3498db;border-radius: 50%;width: 60px;height: 60px;animation: spin 1s linear infinite;position: absolute;}" & _
@@ -207,12 +207,13 @@ Private Function EnsureFile(ByVal url As String, ByVal localPath As String, Opti
             If AutoDownload = False Then GoTo err
             With http
                 .Open "GET", url, False
+                .Option(6) = True
                 .Send
                 If .status = 200 Then
                     With CreateObject("ADODB.Stream")
                         .Type = 1
                         .Open
-                        .Write .ResponseBody
+                        .Write http.ResponseBody
                         .SaveToFile localPath, 2
                         .Close
                     End With
