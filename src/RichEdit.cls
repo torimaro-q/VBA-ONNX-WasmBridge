@@ -14,6 +14,7 @@ Attribute myFrm.VB_VarHelpID = -1
 Private WithEvents myTbx As MSForms.TextBox
 Attribute myTbx.VB_VarHelpID = -1
 Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (pDest As LongPtr, pSource As LongPtr, ByVal dwLength As Long)
+Private Declare PtrSafe Function GetClassInfoEx Lib "user32" Alias "GetClassInfoExW" (ByVal hInstance As LongPtr, ByVal lpszClass As LongPtr, ByRef lpwcx As WNDCLASSEX) As Long
 Private Declare PtrSafe Function GetModuleHandle Lib "kernel32" Alias "GetModuleHandleA" (ByVal lpModuleName As String) As LongPtr
 Private Declare PtrSafe Function LoadLibrary Lib "kernel32" Alias "LoadLibraryA" (ByVal lpLibFileName As String) As LongPtr
 Private Declare PtrSafe Function FreeLibrary Lib "kernel32" (ByVal hLibModule As LongPtr) As Long
@@ -66,6 +67,20 @@ Private Type CHARFORMAT2
     bRevAuthor As Byte
     bUnderlineColor As Byte
 End Type
+Private Type WNDCLASSEX
+    cbSize As Long
+    style As Long
+    lpfnWndProc As LongPtr
+    cbClsExtra As Long
+    cbWndExtra As Long
+    hInstance As LongPtr
+    hIcon As LongPtr
+    hCursor As LongPtr
+    hbrBackground As LongPtr
+    lpszMenuName As LongPtr
+    lpszClassName As LongPtr
+    hIconSm As LongPtr
+End Type
 Public Event Layout()
 Public Event Change()
 Private Const MY_RICH_EDIT_STYLE As Long = WS_CHILD Or WS_VISIBLE Or ES_MULTILINE Or ES_AUTOVSCROLL Or ES_AUTOHSCROLL Or WS_VSCROLL Or ES_DISABLENOSCROLL
@@ -73,7 +88,7 @@ Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR, PAD As Long = 2
 Public PtnDic As Object
 Private MY_FONT_COLOR  As Long, MY_BACK_COLOR As Long, TW2PX As Double
 Private IsInited As Boolean, Reg As Object, LibPtr As LongPtr, CF2 As CHARFORMAT2
-Private rHw As LongPtr, fHw As LongPtr, tHw As LongPtr, buf As String, pre As String
+Private rHw As LongPtr, fHw As LongPtr, tHw As LongPtr, buf As String, pre As String, d2dflg As Boolean
 Private Sub SetColor(ByRef startPos As Long, ByRef length As Long, ByRef color As Long)
     CF2.crTextColor = color
     Dim rh As LongPtr: rh = RichHw
@@ -166,7 +181,11 @@ Private Sub myTbx_Change()
 End Sub
 Private Function SummonEditor() As LongPtr
     With myCtr
-        SummonEditor = CreateWindowEx(0, "RICHEDIT50W", .Tag, MY_RICH_EDIT_STYLE, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), fHw, 0, 0, 0)
+        If d2dflg Then
+            SummonEditor = CreateWindowEx(0, "RichEditD2D", .Tag, MY_RICH_EDIT_STYLE, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), fHw, 0, 0, 0)
+        Else
+            SummonEditor = CreateWindowEx(0, "RICHEDIT50W", .Tag, MY_RICH_EDIT_STYLE, PAD, PAD, CLng(TW2PX * .width - PAD * 2), CLng(TW2PX * .height - PAD * 2), fHw, 0, 0, 0)
+        End If
         SendMessage SummonEditor, EM_SETCHARFORMAT, 0, VarPtr(CF2)
         SendMessage SummonEditor, EM_SETBKGNDCOLOR, 0, MY_BACK_COLOR
     End With
@@ -205,8 +224,14 @@ Private Sub myLoadLibs()
         .IgnoreCase = False
         .Multiline = True
     End With
-    LibPtr = GetModuleHandle("Msftedit.dll")
-    If LibPtr = 0 Then LibPtr = LoadLibrary("Msftedit.dll")
+    Dim wc As WNDCLASSEX: wc.cbSize = Len(wc)
+    If GetClassInfoEx(0, StrPtr("RichEditD2D"), wc) <> 0 Then
+        d2dflg = True
+    Else
+        d2dflg = False
+        LibPtr = GetModuleHandle("Msftedit.dll")
+        If LibPtr = 0 Then LibPtr = LoadLibrary("Msftedit.dll")
+    End If
     TW2PX = GetDPI() / 72
 End Sub
 Private Function GetDPI() As Long
