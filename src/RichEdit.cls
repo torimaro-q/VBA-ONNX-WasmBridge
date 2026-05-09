@@ -83,6 +83,7 @@ Private Type WNDCLASSEX
 End Type
 Public Event Layout()
 Public Event Change()
+Private Const TIP_TEXT As String = "Use Ctrl + Mouse Wheel to change the text size."
 Private Const MY_RICH_EDIT_STYLE As Long = WS_CHILD Or WS_VISIBLE Or ES_MULTILINE Or ES_AUTOVSCROLL Or ES_AUTOHSCROLL Or WS_VSCROLL Or ES_DISABLENOSCROLL
 Private Const MY_MASK As Long = CFM_FACE Or CFM_COLOR, PAD As Long = 2
 Public PtnDic As Object
@@ -256,6 +257,7 @@ On Error GoTo InitErr
         .SpecialEffect = fmSpecialEffectFlat
         .BorderStyle = fmBorderStyleSingle
         .BackColor = MY_BACK_COLOR
+        .ControlTipText = TIP_TEXT
         fHw = .[_GethWnd]
         rHw = SummonEditor
         IsInited = True

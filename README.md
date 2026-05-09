@@ -62,12 +62,18 @@ It is intended **for learning and reference purposes only**, not for production 
   - Open the temporary working folder  
   - Ensure runtime files are available  
   - Open Microsoft Edge to download the ONNX model  
+  - Launch the detailed configuration form for each Onnx model
+  - Edit JavaScript in a RICHEDIT50W / RichEditD2D–based editor to enable execution of the Onnx model
+
 
 - Excel のユーザーフォームに以下のボタンを用意：  
   - 画像を選択して表示  
   - 一時フォルダを開く  
   - ランタイムファイルを確認・取得  
   - Microsoft Edge を開いて ONNX モデルをダウンロード  
+  - 各Onnxモデルの詳細フォームの起動
+  - RICHEDIT50W/RichEditD2DベースのエディタでJavaScriptを編集してOnnxを実行可能
+  
 ---
 
 ## Requirements / 必要環境
