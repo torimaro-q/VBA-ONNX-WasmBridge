@@ -128,7 +128,11 @@ Private Sub Label3_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, By
     ButtonAction Label3, "OpenEdgeForDownload", OnnxMain
 End Sub
 Private Sub Label4_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
-    ButtonAction Label4, "Export", OnnxMain
+    If OnnxMain.OnnxResults.Count > 0 Then
+        ButtonAction Label4, "Export", OnnxMain
+    Else
+        MsgBox "Please click the Execute button first.", vbInformation, "(^_^)"
+    End If
 End Sub
 Private Sub Label5_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
     LabelLibs.Caption = ""
