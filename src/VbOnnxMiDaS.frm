@@ -13,7 +13,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 Implements IVbOnnx
 Private Const CFF As Double = 1 / 256
@@ -76,7 +75,7 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                 .RotationX = -10
                 .RotationY = 170
             End With
-            .Axes(xlValue).MajorUnit = 10
+            .Axes(xlValue).MajorUnit = 50
         End With
     End With
 End Function

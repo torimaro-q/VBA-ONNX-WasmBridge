@@ -125,6 +125,9 @@ End Function
 Public Function GetFileName(ByVal filepath As String, Optional dlm As String = "\") As String
     GetFileName = Split(filepath, dlm)(UBound(Split(filepath, dlm)))
 End Function
+Public Function GetFileExt(ByVal filepath As String, Optional dlm As String = ".") As String
+    GetFileExt = Split(filepath, dlm)(UBound(Split(filepath, dlm)))
+End Function
 Public Sub WriteTextFile(ByVal filepath As String, ByVal fileText As String)
     Dim fileNum As Integer: fileNum = FreeFile
     If Dir(filepath) <> "" Then Kill filepath

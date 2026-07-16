@@ -57,7 +57,7 @@ Private Function GetPipeLine(ByVal tPath As String) As String
         GetPipeLine = "<!doctype html><html><head><meta charset='UTF-8'><title>Running : " & .name & "</title><script src='ort.min.js'></script>" & _
                            "<style>" & ONNX_CSS & "</style></head>" & _
                            "<body>" & _
-                                  "<div id='loader'></div><img id='img' src='images/" & GetFileName(tPath) & "' style='display:none;' />" & _
+                                  "<div id='loader'></div><img id='img' src='images/input" & GetFileExt(tPath) & "' style='display:none;' />" & _
                                   "<script>(async () => {" & .JsCode & "})();</script>" & _
                            "</body>" & _
                         "</html>"
@@ -67,7 +67,7 @@ Public Function Execute(ByVal tPath As String) As Collection
     If ExecuteFlg Then
         If ImagePath <> tPath Then
             Call Image2buffer(tPath)
-            FileCopy tPath, ImagesPath & "\" & GetFileName(tPath)
+            FileCopy tPath, ImagesPath & "\input" & GetFileExt(tPath)
             ImagePath = tPath
         End If
         WriteTextFile JsPath, GetPipeLine(tPath)

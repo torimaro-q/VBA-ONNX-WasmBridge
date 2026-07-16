@@ -13,7 +13,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 Implements IVbOnnx
 Private WithEvents myglf As GLFrame, flg As Boolean, emotions As Variant, rx As Variant, ry As Variant
@@ -136,63 +135,114 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
     With IVbOnnx_Export
         .name = "Scatter" & format(Now(), "yyyymmdd-hhmmss")
         With .Chart
-            .ChartType = xlXYScatterLinesNoMarkers
-            .HasLegend = True
-            .Legend.Delete
-            With .PlotArea.format.Fill
-                .Visible = msoTrue
-                If Parent.ImagePath <> "" Then
-                    .UserPicture Parent.ImagePath
-                    .TextureTile = msoFalse
-                End If
-            End With
-            With .Axes(xlValue)
-                .MinimumScale = 0
-                .MaximumScale = Parent.ImageHeight
-                .ReversePlotOrder = True
-                .MajorGridlines.format.Line.Visible = msoFalse
-            End With
-            With .Axes
-                .Item(1).MinimumScale = 0
-                .Item(1).MaximumScale = Parent.ImageWidth
-            End With
-        On Error GoTo err
-            For i = 1 To Parent.OnnxResults.Count
-                With .SeriesCollection.NewSeries
-                    lnColor = .border.color
-                    .name = Parent.OnnxResults.Item(i).Item("emotion") & ":" & format(Parent.OnnxResults.Item(i).Item("eScore"), "0.0%")
-                    .ChartType = xlXYScatterLinesNoMarkers
-                    With Parent.OnnxResults.Item(i)
-                        tX = .Item("x")
-                        tY = .Item("y")
-                        W = .Item("w")
-                        h = .Item("h")
-                        If tX < 0 Then tX = 0
-                    End With
-                    .XValues = Array(tX, tX + W, tX + W, tX, tX)
-                    .Values = Array(tY, tY, tY + h, tY + h, tY)
-                    With .Points(1)
-                        .ApplyDataLabels
-                        With .DataLabel
-                            With .format.Fill
-                                .Visible = msoTrue
-                                .ForeColor.RGB = RGB(255, 255, 255)
-                                .Transparency = 0
-                                .Solid
+            If Parent.OnnxResults.Count > 1 Then
+                .ChartType = xlXYScatterLinesNoMarkers
+                .HasLegend = True
+                .Legend.Delete
+                With .PlotArea.format.Fill
+                    .Visible = msoTrue
+                    If Parent.ImagePath <> "" Then
+                        .UserPicture Parent.ImagePath
+                        .TextureTile = msoFalse
+                    End If
+                End With
+                With .Axes(xlValue)
+                    .MinimumScale = 0
+                    .MaximumScale = Parent.ImageHeight
+                    .ReversePlotOrder = True
+                    .MajorGridlines.format.Line.Visible = msoFalse
+                End With
+                With .Axes
+                    .Item(1).MinimumScale = 0
+                    .Item(1).MaximumScale = Parent.ImageWidth
+                End With
+            On Error GoTo err
+                For i = 1 To Parent.OnnxResults.Count
+                    With .SeriesCollection.NewSeries
+                        lnColor = .border.color
+                        .name = Parent.OnnxResults.Item(i).Item("emotion") & ":" & format(Parent.OnnxResults.Item(i).Item("eScore"), "0.0%")
+                        .ChartType = xlXYScatterLinesNoMarkers
+                        With Parent.OnnxResults.Item(i)
+                            tX = .Item("x")
+                            tY = .Item("y")
+                            W = .Item("w")
+                            h = .Item("h")
+                            If tX < 0 Then tX = 0
+                        End With
+                        .XValues = Array(tX, tX + W, tX + W, tX, tX)
+                        .Values = Array(tY, tY, tY + h, tY + h, tY)
+                        With .Points(1)
+                            .ApplyDataLabels
+                            With .DataLabel
+                                With .format.Fill
+                                    .Visible = msoTrue
+                                    .ForeColor.RGB = RGB(255, 255, 255)
+                                    .Transparency = 0
+                                    .Solid
+                                End With
+                                With .format.Line
+                                    .Visible = msoTrue
+                                    .ForeColor.RGB = lnColor
+                                    .Transparency = 0
+                                    .Visible = msoTrue
+                                    .weight = 1.5
+                                End With
+                                .ShowValue = 0
+                                .ShowSeriesName = -1
                             End With
-                            With .format.Line
-                                .Visible = msoTrue
-                                .ForeColor.RGB = lnColor
-                                .Transparency = 0
-                                .Visible = msoTrue
-                                .weight = 1.5
-                            End With
-                            .ShowValue = 0
-                            .ShowSeriesName = -1
                         End With
                     End With
+                Next i
+            Else
+                With .ChartArea.Fill
+                    .Visible = msoTrue
+                    .UserPicture Parent.ImagePath
                 End With
-            Next i
+                .ChartType = xlRadarFilled
+                .HasLegend = False
+                With .Axes(xlValue)
+                    .MinimumScale = 0
+                    .MaximumScale = 1
+                    .TickLabels.NumberFormatLocal = "0%"
+                    .format.Line.Visible = msoFalse
+                    .MajorUnit = 1
+                    .Delete
+                End With
+            On Error GoTo err
+                Dim tResult As Variant: Set tResult = Parent.OnnxResults.Item(1)
+                Dim emlabel As Variant: ReDim emlabel(LBound(emotions) To UBound(emotions))
+                Dim emscore As Variant: ReDim emscore(LBound(emotions) To UBound(emotions))
+                For i = LBound(emotions) To UBound(emotions)
+                    emlabel(i) = emotions(i) & vbCr & format(tResult.Item(emotions(i)), "0%")
+                    emscore(i) = tResult.Item(emotions(i))
+                Next i
+                With .SeriesCollection.NewSeries
+                    .name = tResult.Item("emotion")
+                    .XValues = emlabel
+                    .Values = emscore
+                End With
+                .ChartTitle.Delete
+                .PlotArea.Fill.Visible = msoFalse
+                With .ChartArea.format.TextFrame2.TextRange.Font
+                    .size = 12
+                    .Bold = msoTrue
+                    .Caps = msoNoCaps
+                    With .Fill
+                        .Visible = msoTrue
+                        .ForeColor.RGB = RGB(0, 0, 0)
+                        .Transparency = 0
+                        .Solid
+                    End With
+                    With .Line
+                        .Visible = msoTrue
+                        .Transparency = 0
+                        .weight = 0.5
+                        .DashStyle = msoLineSolid
+                        .style = msoLineSingle
+                        .ForeColor.RGB = RGB(254, 254, 254)
+                    End With
+                End With
+            End If
         End With
     End With
 err:
