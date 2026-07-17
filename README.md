@@ -141,3 +141,6 @@ It is not intended for production environments.
 ## Third‑Party Licenses
 This project uses ONNX Runtime Web (MIT License).
 Copyright (c) Microsoft Corporation.
+
+# 🐧Learn More
+https://zenn.dev/torimaro/articles/9daefb535755a9
