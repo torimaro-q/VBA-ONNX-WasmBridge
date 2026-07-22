@@ -134,6 +134,7 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
     Set IVbOnnx_Export = target.ChartObjects.Add(Left:=Left, Top:=Top, width:=csize * asp, height:=csize)
     With IVbOnnx_Export
         .name = "Scatter" & format(Now(), "yyyymmdd-hhmmss")
+        On Error GoTo err
         With .Chart
             If Parent.OnnxResults.Count > 1 Then
                 .ChartType = xlXYScatterLinesNoMarkers
@@ -156,7 +157,6 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                     .Item(1).MinimumScale = 0
                     .Item(1).MaximumScale = Parent.ImageWidth
                 End With
-            On Error GoTo err
                 For i = 1 To Parent.OnnxResults.Count
                     With .SeriesCollection.NewSeries
                         lnColor = .border.color
@@ -194,8 +194,6 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                     End With
                 Next i
             Else
-            
-            On Error GoTo err
                 Dim tResult As Variant: Set tResult = Parent.OnnxResults.Item(1)
                 Dim emlabel As Variant: ReDim emlabel(LBound(emotions) To UBound(emotions))
                 Dim emscore As Variant: ReDim emscore(LBound(emotions) To UBound(emotions))
@@ -205,59 +203,66 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                 Next i
                 If Rnd() > 0.5 Then
                     .ChartType = xlPie
+                    .HasLegend = True
+                   With .SeriesCollection.NewSeries
+                        .name = tResult.Item("emotion")
+                        .XValues = emotions
+                        .Values = emscore
+                        .HasDataLabels = True
+                        With .DataLabels
+                            .ShowValue = False
+                            .ShowCategoryName = True
+                            .ShowPercentage = True
+                            .Separator = vbLf
+                            .Font.size = 12
+                            .Font.Bold = True
+                        End With
+                        For i = 1 To .Points.Count
+                            If emscore(i - 1) < 0.03 Then .Points(i).DataLabel.Delete
+                        Next
+                    End With
+                    DoEvents
+                    .ChartTitle.Delete
+                    With .Legend
+                        .Fill.UserPicture Parent.ImagePath
+                        .Left = csize * asp * 0.6
+                        .width = csize * asp * 0.4
+                        .height = (.width / asp)
+                    End With
+                    .Legend.Top = .ChartArea.height - .Legend.height
+                    With .PlotArea
+                        .width = csize * asp * 0.5
+                        .Left = 5
+                        .Top = 20
+                    End With
+                    With .Legend
+                        With .format.TextFrame2.TextRange.Font
+                            .size = 1
+                            With .Fill
+                                .Visible = msoFalse
+                                .Transparency = 1
+                                .Solid
+                            End With
+                            With .Line
+                                .Visible = msoFalse
+                                .Transparency = 1
+                            End With
+                        End With
+                    End With
+                Else
+                    .ChartType = xlRadarFilled
+                    .HasLegend = False
                     With .SeriesCollection.NewSeries
                         .name = tResult.Item("emotion")
                         .XValues = emlabel
                         .Values = emscore
                     End With
-                    With .PlotArea
-                        .width = csize * asp * 0.45
-                        .Top = csize * 0.2
-                    End With
-                    .HasLegend = True
-                    With .Legend
-                        .Fill.UserPicture Parent.ImagePath
-                        .Left = csize * asp * 0.6
-                        .width = csize * asp * 0.55
-                        .Top = csize * 0.2
-                        .height = (.width / asp)
-                        If .LegendEntries.Count > 2 Then
-                            For i = .LegendEntries.Count To 2 Step -1
-                                .LegendEntries(i).Delete
-                            Next i
-                            With .format.TextFrame2.TextRange.Font
-                                .size = 20
-                                .Bold = msoTrue
-                                .Caps = msoNoCaps
-                                With .Fill
-                                    .Visible = msoTrue
-                                    .ForeColor.RGB = RGB(254, 254, 254)
-                                    .Transparency = 0
-                                    .Solid
-                                End With
-                                With .Line
-                                    .Visible = msoTrue
-                                    .Transparency = 0
-                                    .weight = 0.75
-                                    .DashStyle = msoLineSolid
-                                    .style = msoLineSingle
-                                    With .ForeColor
-                                        .ObjectThemeColor = msoThemeColorAccent1
-                                        .TintAndShade = 0
-                                        .Brightness = 0
-                                    End With
-                                End With
-                                .Spacing = 0.5
-                            End With
-                        End If
-                    End With
-                Else
+                    DoEvents
+                    .ChartTitle.Delete
                     With .ChartArea.Fill
                         .Visible = msoTrue
                         .UserPicture Parent.ImagePath
                     End With
-                    .ChartType = xlRadarFilled
-                    .HasLegend = False
                     With .Axes(xlValue)
                         .MinimumScale = 0
                         .MaximumScale = 1
@@ -266,12 +271,6 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
                         .MajorUnit = 1
                         .Delete
                     End With
-                    With .SeriesCollection.NewSeries
-                        .name = tResult.Item("emotion")
-                        .XValues = emlabel
-                        .Values = emscore
-                    End With
-                    .ChartTitle.Delete
                     .PlotArea.Fill.Visible = msoFalse
                     With .ChartArea.format.TextFrame2.TextRange.Font
                         .size = 12
@@ -298,3 +297,4 @@ Private Function IVbOnnx_Export(target As Worksheet, Parent As VbOnnxMain, Optio
     End With
 err:
 End Function
+
